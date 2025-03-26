@@ -42,24 +42,24 @@ const populationData = {
 
 // overview.html에서 호출
 function applyFilter() {
-    const gender = document.getElementById('gender').value;
+    const department = document.getElementById('department').value;
     const ageGroup = document.getElementById('age_group').value;
     const condition = document.getElementById('condition').value;
     const exposure = document.getElementById('exposure').value;
 
-    window.location.href = `details.html?gender=${gender}&age_group=${ageGroup}&condition=${condition}&exposure=${exposure}`;
+    window.location.href = `details.html?department=${department}&age_group=${ageGroup}&condition=${condition}&exposure=${exposure}`;
 }
 
 // details.html에서 호출
 function renderFilteredData() {
     const urlParams = new URLSearchParams(window.location.search);
-    let gender = urlParams.get('gender');
+    let department = urlParams.get('department');
     let ageGroup = urlParams.get('age_group');
     let condition = urlParams.get('condition');
     let exposure = urlParams.get('exposure');
 
     // 쿼리 파라미터가 없으면 기본값 설정
-    if (!gender) gender = 'male';
+    if (!department) department = 'cardiology';
     if (!ageGroup) ageGroup = '10s';
     if (!condition) condition = 'onset';
     if (!exposure) exposure = 'long';
