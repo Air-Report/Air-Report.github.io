@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AIR Dashboard - Detailed Health Data">
+    <title>AIR Dashboard - Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.ico">
+</head>
+<body>
+    <div class="header">
+        <h1>AIR Dashboard</h1>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="overview.html">Overview</a>
+        <a href="details.html">Details</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+    </div>
+
+    <div class="content">
+        <div class="header-row">
+            <h2>Filtered Health Data</h2>
+            <div class="toggle-buttons">
+                <button id="show-stats" onclick="toggleView('stats')" class="active">< 통계</button>
+                <button id="show-graph" onclick="toggleView('graph')">> 그래프</button>
+            </div>
+        </div>
+
+        <div class="content-sections">
+            <div class="pyramid-section compact">
+                <h3>100명그룹 - 발생률</h3>
+                <div style="display: flex; justify-content: center; align-items: center; margin-top: 10px;">
+                    <i class="fas fa-male" style="font-size: 30px; color: #1a73e8; margin-right: 10px;"></i>
+                    <div>
+                        <p id="total-population" style="font-size: 16px; margin: 0;">XXX,XXX명</p>
+                        <p id="percentage" style="font-size: 12px; color: #888;">(2.5%)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h3>통계</h3>
+                <div id="stats-content">
+                    <!-- JS로 동적 삽입 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="graph-section" class="graph-section" style="display: none;">
+            <img src="graph.png" alt="Graph Visualization">
+            <div class="graph-label">성별-연령 분포 그래프</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-text">
+            <p>© 2025 AIR Dashboard. All rights reserved.</p>
+            <p>Contact: <a href="mailto:support@airdashboard.com" style="color: #e0e0e0;">support@airdashboard.com</a> | Follow us on <a href="#" style="color: #e0e0e0;">Twitter</a></p>
+        </div>
+        <div class="footer-logos">
+            <img src="NIoH.png" alt="NIoH Logo" class="footer-logo">
+            <img src="samsung.png" alt="Samsung Logo" class="footer-logo">
+            <img src="sung_univ.png" alt="Sungkyunkwan University Logo" class="footer-logo">
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        window.onload = function() {
+            renderFilteredData();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+/* base.html 스타일 */
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.header {
+    background-color: #1a3c5e;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+.nav {
+    background-color: #2a4d7a;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.nav a {
+    color: white;
+    margin: 0 20px;
+    text-decoration: none;
+    font-weight: 500;
+}
+.nav a:hover {
+    text-decoration: underline;
+    color: #e0e0e0;
+}
+.content {
+    flex-grow: 1;
+    padding: 30px;
+}
+.footer {
+    background-color: #1a3c5e;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-size: 14px;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-text {
+    text-align: left;
+}
+
+.footer-logos {
+    display: flex;
+    gap: 10px;
+}
+
+.footer-logo {
+    height: 60px; /* 로고 크기 조정, 필요에 따라 변경 가능 */
+    width: auto;
+}
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 20px;
+    }
+    .nav a {
+        margin: 0 10px;
+        font-size: 14px;
+    }
+    .content {
+        padding: 15px;
+    }
+}
+
+/* 기존 스타일 */
+.filter-bar select, .filter-bar button {
+    padding: 5px;
+    margin: 0 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+.filter-bar button {
+    background-color: #1a3c5e;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+.filter-bar button:hover {
+    background-color: #2a4d7a;
+}
+.filter-bar {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+}
+.pyramid-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 45%;
+    box-sizing: border-box;
+    padding: 20px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+.pyramid-section.compact {
+    width: 30%;
+    padding: 15px;
+}
+.stats-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 65%;
+    box-sizing: border-box;
+    padding: 20px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+.map-label, .graph-label {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
+.graph-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.graph-section img, .pyramid img, .map img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.content-sections {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+.stats-section h3 {
+    margin-bottom: 20px;
+}
+.stats-category {
+    margin-bottom: 20px;
+}
+.stats-category h4 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
+}
+.stats-items {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+.stats-item {
+    text-align: center;
+    margin: 10px;
+    min-width: 100px;
+}
+.stats-item i {
+    font-size: 30px;
+    margin-bottom: 5px;
+}
+.stats-item p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+.stats-item .percentage {
+    font-weight: bold;
+    color: #1a73e8;
+}
+.pyramid, .map {
+    width: 45%;
+    text-align: center;
+}
+
+/* 새로운 스타일: h2와 버튼 수평 정렬 */
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.header-row h2 {
+    margin: 0;
+    font-size: 24px;
+}
+.toggle-buttons {
+    display: flex;
+    gap: 10px;
+}
+.toggle-buttons button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: #1a3c5e;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+.toggle-buttons button:hover {
+    background-color: #2a4d7a;
+}
+.toggle-buttons button.active {
+    background-color: #2a4d7a;
+    font-weight: bold;
+}
