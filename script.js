@@ -1,70 +1,76 @@
 // 더미 데이터
 const statsData = {
     "age": [
-        {"name": "< 65", "percentage": "60", "icon": "fas fa-child", "color": "#333"},
-        {"name": "≥ 65", "percentage": "40", "icon": "fas fa-user", "color": "#333"}
+        {"name": "< 65", "percentage": "40.17", "icon": "fas fa-user", "color": "#333"}, // 40.17%
+        {"name": "≥ 65", "percentage": "59.83", "icon": "fas fa-blind", "color": "#333"} // 59.83%
     ],
     "sex": [
-        {"name": "Male", "percentage": "55", "icon": "fas fa-male", "color": "#1a73e8"},
-        {"name": "Female", "percentage": "45", "icon": "fas fa-female", "color": "#e91e63"}
+        {"name": "Male", "percentage": "59.92", "icon": "fas fa-male", "color": "#1a73e8"}, // 59.92%
+        {"name": "Female", "percentage": "40.08", "icon": "fas fa-female", "color": "#e91e63"} // 40.08%
     ],
     "income": [
-        {"name": "Medical aid", "percentage": "10", "icon": "fas fa-hand-holding-medical", "color": "#2ecc71"},
-        {"name": "≤ 30th", "percentage": "20", "icon": "fas fa-coins", "color": "#2ecc71"},
-        {"name": "31st - 70th", "percentage": "40", "icon": "fas fa-money-bill-wave", "color": "#2ecc71"},
-        {"name": "> 70th", "percentage": "30", "icon": "fas fa-wallet", "color": "#2ecc71"}
+        {"name": "Medical aid", "percentage": "9.8", "icon": "fas fa-coins", "color": "#2ecc71"}, // 9.8%
+        {"name": "≤ 30th", "percentage": "19.94", "icon": "fas fa-coins", "color": "#2ecc71"}, // 19.94%
+        {"name": "31st - 70th", "percentage": "29.08", "icon": "fas fa-coins", "color": "#2ecc71"}, // 29.08%
+        {"name": "> 70th", "percentage": "39.51", "icon": "fas fa-coins", "color": "#2ecc71"} // 39.51%
     ],
     "smoking": [
-        {"name": "Never", "percentage": "50", "icon": "fas fa-ban", "color": "#e74c3c"},
-        {"name": "Past", "percentage": "20", "icon": "fas fa-history", "color": "#e74c3c"},
-        {"name": "Current", "percentage": "25", "icon": "fas fa-smoking", "color": "#e74c3c"},
-        {"name": "Unknown", "percentage": "5", "icon": "fas fa-question", "color": "#e74c3c"}
+        {"name": "Never", "percentage": "30.09", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 30.09%
+        {"name": "Past", "percentage": "10.17", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 10.17%
+        {"name": "Current", "percentage": "15.02", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 15.02%
+        {"name": "Unknown", "percentage": "44.72", "icon": "fas fa-smoking", "color": "#e74c3c"} // 44.72%
     ],
     "bmi": [
-        {"name": "Underweight", "percentage": "10", "icon": "fas fa-weight", "color": "#f39c12"},
-        {"name": "Normal", "percentage": "40", "icon": "fas fa-balance-scale", "color": "#f39c12"},
-        {"name": "Overweight", "percentage": "30", "icon": "fas fa-weight", "color": "#f39c12"},
-        {"name": "Obese", "percentage": "15", "icon": "fas fa-weight", "color": "#f39c12"},
-        {"name": "Unknown", "percentage": "5", "icon": "fas fa-question", "color": "#f39c12"}
+        {"name": "Underweight", "percentage": "1.7", "icon": "fas fa-weight", "color": "#f39c12"}, // 1.7%
+        {"name": "Normal", "percentage": "17.01", "icon": "fas fa-balance-scale", "color": "#f39c12"}, // 17.01%
+        {"name": "Overweight", "percentage": "14.51", "icon": "fas fa-weight", "color": "#f39c12"}, // 14.51%
+        {"name": "Obese", "percentage": "22.79", "icon": "fas fa-weight", "color": "#f39c12"}, // 22.79%
+        {"name": "Unknown", "percentage": "43.99", "icon": "fas fa-question", "color": "#f39c12"} // 43.99%
     ],
     "comorbidity": [
-        {"name": "Hypertension", "percentage": "30", "icon": "fas fa-heartbeat", "color": "#9b59b6"},
-        {"name": "Diabetes mellitus", "percentage": "20", "icon": "fas fa-syringe", "color": "#9b59b6"},
-        {"name": "Dyslipidemia", "percentage": "25", "icon": "fas fa-tint", "color": "#9b59b6"},
-        {"name": "Overall I code", "percentage": "25", "icon": "fas fa-diagnoses", "color": "#9b59b6"}
+        {"name": "Hypertension", "percentage": "68.35", "icon": "fas fa-heartbeat", "color": "#9b59b6"}, // 68.35%
+        {"name": "Diabetes mellitus", "percentage": "42.91", "icon": "fas fa-syringe", "color": "#9b59b6"}, // 42.91%
+        {"name": "Dyslipidemia", "percentage": "62.40", "icon": "fas fa-tint", "color": "#9b59b6"}, // 62.40%
+        {"name": "Overall I code", "percentage": "73.71", "icon": "fas fa-diagnoses", "color": "#9b59b6"} // 73.71%
     ]
 };
 
 const populationData = {
-    "total": "XXX,XXX",
-    "percentage": "2.5"
+    "total": "288,898", // 288,898명으로 변경
+    "percentage": "2.89" // 2.89%로 변경
 };
 
 // overview.html에서 호출
 function applyFilter() {
     const department = document.getElementById('department').value;
-    const ageGroup = document.getElementById('age_group').value;
+    const disease = document.getElementById('disease').value;
     const condition = document.getElementById('condition').value;
     const exposure = document.getElementById('exposure').value;
 
-    window.location.href = `details.html?department=${department}&age_group=${ageGroup}&condition=${condition}&exposure=${exposure}`;
+    window.location.href = `details.html?department=${department}&disease=${disease}&condition=${condition}&exposure=${exposure}`;
 }
 
 // details.html에서 호출
 function renderFilteredData() {
     const urlParams = new URLSearchParams(window.location.search);
     let department = urlParams.get('department');
-    let ageGroup = urlParams.get('age_group');
+    let disease = urlParams.get('disease');
     let condition = urlParams.get('condition');
     let exposure = urlParams.get('exposure');
 
-    // 쿼리 파라미터가 없으면 기본값 설정
-    if (!department) department = 'cardiology';
-    if (!ageGroup) ageGroup = '10s';
-    if (!condition) condition = 'onset';
-    if (!exposure) exposure = 'long';
+    if (!department) department = '순환기';
+    if (!disease) disease = 'cicr1';
+    if (!condition) condition = '발생';
+    if (!exposure) exposure = '단기';
 
-    document.getElementById('total-population').textContent = populationData.total + '명';
+    const filterTitle = document.getElementById('filter-title');
+    if (filterTitle) {
+        filterTitle.textContent = `${department.charAt(0).toUpperCase() + department.slice(1)}, ${disease}, ${condition.charAt(0).toUpperCase() + condition.slice(1)}, ${exposure.charAt(0).toUpperCase() + exposure.slice(1)}`;
+    } else {
+        console.error("Element with id 'filter-title' not found.");
+    }
+
+    document.getElementById('total-population').textContent = populationData.total.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '명';
     document.getElementById('percentage').textContent = '(' + populationData.percentage + '%)';
 
     const statsContent = document.getElementById('stats-content');
@@ -75,8 +81,21 @@ function renderFilteredData() {
         categoryDiv.className = 'stats-category';
 
         const categoryTitle = document.createElement('h4');
+        const titleWrapper = document.createElement('div');
+        titleWrapper.style.display = 'flex';
+        titleWrapper.style.alignItems = 'center';
+        titleWrapper.style.justifyContent = 'center';
         categoryTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-        categoryDiv.appendChild(categoryTitle);
+        titleWrapper.appendChild(categoryTitle);
+
+        if (category !== 'age' && category !== 'sex' && statsData[category].length > 0) {
+            const icon = document.createElement('i');
+            icon.className = statsData[category][0].icon;
+            icon.style.color = statsData[category][0].color;
+            icon.style.marginLeft = '10px';
+            titleWrapper.appendChild(icon);
+        }
+        categoryDiv.appendChild(titleWrapper);
 
         const itemsDiv = document.createElement('div');
         itemsDiv.className = 'stats-items';
@@ -85,10 +104,12 @@ function renderFilteredData() {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'stats-item';
 
-            const icon = document.createElement('i');
-            icon.className = item.icon;
-            icon.style.color = item.color;
-            itemDiv.appendChild(icon);
+            if (category === 'age' || category === 'sex') {
+                const icon = document.createElement('i');
+                icon.className = item.icon;
+                icon.style.color = item.color;
+                itemDiv.appendChild(icon);
+            }
 
             const name = document.createElement('p');
             name.textContent = item.name;

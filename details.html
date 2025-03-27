@@ -25,7 +25,7 @@
 
     <div class="content">
         <div class="header-row">
-            <h2>Filtered Health Data</h2>
+            <h2 id="filter-title">Filtered Health Data</h2>
             <div class="toggle-buttons">
                 <button id="show-stats" onclick="toggleView('stats')" class="active">< 통계</button>
                 <button id="show-graph" onclick="toggleView('graph')">> 그래프</button>
@@ -33,43 +33,57 @@
         </div>
 
         <div class="content-sections">
-            <div class="pyramid-section compact">
-                <h3>100명그룹 - 발생률</h3>
-                <div style="display: flex; justify-content: center; align-items: center; margin-top: 10px;">
-                    <i class="fas fa-male" style="font-size: 30px; color: #1a73e8; margin-right: 10px;"></i>
-                    <div>
-                        <p id="total-population" style="font-size: 16px; margin: 0;">XXX,XXX명</p>
-                        <p id="percentage" style="font-size: 12px; color: #888;">(2.5%)</p>
+            <div class="left-column">
+                <div class="pyramid-section compact">
+                    <h3>발생률</h3>
+                    <div style="display: flex; justify-content: center; align-items: center; margin-top: 10px;">
+                        <i class="fas fa-person population-icon"></i>
+                            <div>
+                                <p id="total-population">288,898명</p>
+                                <p id="percentage">(2.89%)</p>
+                            </div>
+                    </div>
+                </div>
+                <div class="stats-section">
+                    <h3>통계</h3>
+                    <div id="stats-content">
+                        <!-- JS로 동적 삽입 -->
                     </div>
                 </div>
             </div>
-
-            <div class="stats-section">
-                <h3>통계</h3>
-                <div id="stats-content">
-                    <!-- JS로 동적 삽입 -->
+            <div class="right-column">
+                <div class="new-section">
+                    <div class="graph-container">
+                        <img src="static/graph_tb2.png" alt="Graph 1" class="graph-image">
+                        <div class="graph-caption">Graph 1: [설명 추가 예정]</div>
+                    </div>
+                    <div class="graph-container">
+                        <img src="static/graph_tb4.png" alt="Graph 2" class="graph-image">
+                        <div class="graph-caption">Graph 2: [설명 추가 예정]</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="graph-section" class="graph-section" style="display: none;">
-            <img src="graph.png" alt="Graph Visualization">
-            <div class="graph-label">성별-연령 분포 그래프</div>
+            <img src="static/graph_tb3.png" alt="Graph Visualization">
+            <div class="graph-label">* This model adjusted temperature and relative humidity.</div>
         </div>
     </div>
 
     <div class="footer">
         <div class="footer-text">
             <p>© 2025 AIR Dashboard. All rights reserved.</p>
-            <p>Contact: <a href="mailto:support@airdashboard.com" style="color: #e0e0e0;">support@airdashboard.com</a> | Follow us on <a href="#" style="color: #e0e0e0;">Twitter</a></p>
+            <p>Contact: <a href="#" style="color: #e0e0e0;"><span class="__cf_email__" data-cfemail="b98a8c8989968b8db998908b9d988a919b96988b9dd79a9694">[email&#160;protected]</span></a> | Follow us on <a href="#" style="color: #e0e0e0;">Twitter</a></p>
         </div>
         <div class="footer-logos">
-            <img src="NIoH.png" alt="NIoH Logo" class="footer-logo">
-            <img src="samsung.png" alt="Samsung Logo" class="footer-logo">
-            <img src="sung_univ.png" alt="Sungkyunkwan University Logo" class="footer-logo">
+            <img src="static/NIoH.png" alt="NIoH Logo" class="footer-logo">
+            <img src="static/samsung.png" alt="Samsung Logo" class="footer-logo">
+            <img src="static/sung_univ.png" alt="Sungkyunkwan University Logo" class="footer-logo">
         </div>
     </div>
     
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="script.js"></script>
     <script>
         window.onload = function() {
