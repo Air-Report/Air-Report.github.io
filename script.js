@@ -147,3 +147,76 @@ function toggleView(view) {
         graphButton.classList.add('active');
     }
 }
+
+// table3 SVG 로드 및 툴팁 기능 추가
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM 로드 완료');
+  
+    const svgObject = document.getElementById('graph-svg');
+    if (svgObject) {
+      console.log('graph-svg 요소 찾음');
+  
+      svgObject.addEventListener('load', () => {
+        console.log('SVG 로드 완료');
+        setupSvgTooltip(svgObject);
+      });
+  
+      // SVG가 이미 로드된 경우 대비
+      if (svgObject.contentDocument) {
+        console.log('SVG 이미 로드됨');
+        setupSvgTooltip(svgObject);
+      }
+    } else {
+      console.error('graph-svg 요소를 찾을 수 없습니다.');
+    }
+  });
+  
+  function setupSvgTooltip(svgObject) {
+    const svgDoc = svgObject.contentDocument;
+    if (svgDoc) {
+      console.log('SVG 문서 접근 성공');
+      const svg = svgDoc.querySelector('svg');
+      if (svg) {
+        console.log('SVG 요소 찾음');
+        svg.style.width = '100%';
+        svg.style.height = 'auto';
+  
+        // 툴팁 요소 생성
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        document.body.appendChild(tooltip);
+  
+        // <g> 태그에 툴팁 추가 (박스 툴팁만)
+        const targetGroups = svg.querySelectorAll('g[id^="rect-"]');
+        console.log('g[id^="rect-"] 개수:', targetGroups.length);
+        targetGroups.forEach(group => {
+          const path = group.querySelector('path');
+          if (path) {
+            console.log('박스 툴팁 추가:', group.id);
+            path.addEventListener('mouseover', (e) => {
+              const or = group.getAttribute('data-or');
+              const ciLower = group.getAttribute('data-ci-lower');
+              const ciUpper = group.getAttribute('data-ci-upper');
+              tooltip.textContent = `OR: ${or}, CI: [${ciLower}, ${ciUpper}]`;
+              tooltip.style.display = 'block';
+              tooltip.style.left = `${e.pageX - 10}px`;
+              tooltip.style.top = `${e.pageY + 180}px`;
+            });
+            path.addEventListener('mousemove', (e) => {
+              tooltip.style.left = `${e.pageX - 10}px`;
+              tooltip.style.top = `${e.pageY + 180}px`;
+            });
+            path.addEventListener('mouseout', () => {
+              tooltip.style.display = 'none';
+            });
+          } else {
+            console.warn('그룹 내 path 요소 없음:', group.id);
+          }
+        });
+      } else {
+        console.error('SVG 요소를 찾을 수 없습니다.');
+      }
+    } else {
+      console.error('SVG 문서에 접근할 수 없습니다.');
+    }
+  }
