@@ -27,14 +27,15 @@
         <h1>분석 데이터 소개</h1>
         <h2>건강보험공단자료 2006년 기준 연령, 성별, 지역 층화 추출한 10,005,312명</h2>
         <div id="initial-content" class="content-sections">
-            <div class="pyramid">
+            <div class="pyramid overview-pyramid">
                 <img src="static/pyramid.png" alt="Population Pyramid">
                 <div class="map-label">연령, 성별 분포</div>
             </div>
-            <div class="map">
+            <div class="map overview-map">
                 <img src="static/map.png" alt="Map Visualization">
                 <div class="map-label">지역별 N수 분포 </div>
             </div>
+        </div>
         </div>
         <div class="filter-bar">
             <label for="department">분과:</label>
@@ -50,14 +51,10 @@
                 <option value="안과">안과</option>
                 <option value="소화기">소화기</option>
                 <option value="내분비">내분비</option>
+                <option value="이비인후">이비인후</option>
             </select>
             <label for="disease">질환:</label>
             <select id="disease">
-                <option value="cicr1">cicr1</option>
-                <option value="cicr2">cicr2</option>
-                <option value="cicr3">cicr3</option>
-                <option value="cicr4">cicr4</option>
-                <option value="cicr5">cicr5</option>
             </select>
             <label for="condition">발생/악화:</label>
             <select id="condition">
@@ -84,7 +81,7 @@
             <img src="static/sung_univ.png" alt="Sungkyunkwan University Logo" class="footer-logo">
         </div>
     </div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

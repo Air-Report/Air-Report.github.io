@@ -40,6 +40,77 @@ const populationData = {
     "percentage": "2.89" // 2.89%로 변경
 };
 
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/data/data.csv')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('CSV 파일 로드 실패: ' + response.statusText);
+            }
+            return response.text();
+        })
+        .then(csvText => {
+            Papa.parse(csvText, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (result) => {
+                    window.csvData = result.data;
+                    console.log("CSV 파싱 완료:", window.csvData);
+
+                    // 분과-질환 매핑 생성
+                    const diseaseOptions = {};
+                    window.csvData.forEach(row => {
+                        const department = row["분과"];
+                        const disease = row["질환명"];
+                        if (department && disease) {
+                            if (!diseaseOptions[department]) {
+                                diseaseOptions[department] = new Set();
+                            }
+                            diseaseOptions[department].add(disease);
+                        }
+                    });
+
+                    // Set을 배열로 변환
+                    for (const dept in diseaseOptions) {
+                        diseaseOptions[dept] = Array.from(diseaseOptions[dept]).map(disease => ({
+                            value: disease,
+                            text: disease
+                        }));
+                    }
+                    console.log("분과-질환 매핑:", diseaseOptions);
+
+                    // 필터바 초기화
+                    const departmentSelect = document.getElementById('department');
+                    const diseaseSelect = document.getElementById('disease');
+                    updateDiseaseOptions(departmentSelect.value, diseaseOptions);
+
+                    // 분과 변경 이벤트
+                    departmentSelect.addEventListener('change', (e) => {
+                        updateDiseaseOptions(e.target.value, diseaseOptions);
+                    });
+                },
+                error: (error) => {
+                    console.error("CSV 파싱 오류:", error);
+                }
+            });
+        })
+        .catch(error => {
+            console.error("CSV 파일 가져오기 오류:", error);
+        });
+});
+
+// 질환 옵션 업데이트 함수
+function updateDiseaseOptions(department, diseaseOptions) {
+    const diseaseSelect = document.getElementById('disease');
+    diseaseSelect.innerHTML = ''; // 기존 옵션 초기화
+    const diseases = diseaseOptions[department] || [];
+    diseases.forEach(disease => {
+        const option = document.createElement('option');
+        option.value = disease.value;
+        option.textContent = disease.text;
+        diseaseSelect.appendChild(option);
+    });
+}
+
 // overview.html에서 호출
 function applyFilter() {
     const department = document.getElementById('department').value;
