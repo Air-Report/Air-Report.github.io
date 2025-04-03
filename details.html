@@ -12,19 +12,21 @@
 </head>
 <body>
     <div class="header">
-        <h1>AIR Dashboard</h1>
+        <h1>AIR 보고서</h1>
     </div>
 
     <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="overview.html">Overview</a>
-        <a href="details.html">Details</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Contact</a>
+        <a href="index.html">보고서개괄(임시)</a>
+        <a href="overview.html">분석데이터소개</a>
+        <a href="details.html">세부질환결과</a>
+        <a href="about.html">임시페이지</a>
+        <a href="contact.html">임시페이지</a>
     </div>
 
     <div class="content">
+        <h1>세부 질환 결과</h1>
         <div class="header-row">
+            
             <h2 id="filter-title">Filtered Health Data</h2>
             <div class="toggle-buttons">
                 <button id="show-stats" onclick="toggleView('stats')" class="active">< 통계</button>
@@ -53,13 +55,14 @@
             </div>
             <div class="right-column">
                 <div class="new-section">
+                    <div class="section-caption">* 온도와 상대습도를 보정한 결과. </div>
                     <div class="graph-container">
-                        <img src="static/graph_tb2.png" alt="Graph 1" class="graph-image">
-                        <div class="graph-caption">Graph 1: [설명 추가 예정]</div>
+                        <div class="graph-caption">미세먼지 단기노출(질환 발생일~질환 발생 전일)로 인한 질환 발생 위험 </div>
+                        <object type="image/svg+xml" data="static/graph_tb2.svg" id="graph-tb2-svg" class="graph-image"></object>
                     </div>
                     <div class="graph-container">
-                        <img src="static/graph_tb4.png" alt="Graph 2" class="graph-image">
-                        <div class="graph-caption">Graph 2: [설명 추가 예정]</div>
+                        <div class="graph-caption">미세먼지 노출 기간에 따른 건강영향</div>
+                        <object type="image/svg+xml" data="static/graph_tb4.svg" id="graph-tb4-svg" class="graph-image"></object>
                     </div>
                 </div>
             </div>
@@ -67,9 +70,11 @@
 
         <div id="graph-section" class="graph-section">
             <div id="graph-container">
+                <div class="graph-caption">위험요인에 따른 하위그룹 분석 결과 </div>
+                <div class="section-caption">* 온도와 상대습도를 보정한 결과. </div>
               <object type="image/svg+xml" data="static/graph.svg" id="graph-svg"></object>
             </div>
-            <div class="graph-label">* This model adjusted temperature and relative humidity.</div>
+            <div class="graph-label">* p-value: 통계적 유의미성을 평가하는 지표로, 귀무가설이 참일 때 관찰된 결과가 우연히 발생할 확률을 나타냅니다. p ≤ 0.05일 경우 통계적으로 유의미함.</div></div>
           </div>
     </div>
 

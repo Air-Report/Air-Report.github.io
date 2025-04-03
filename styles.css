@@ -165,6 +165,7 @@ body {
     padding: 20px;
     box-sizing: border-box;
     position: relative;
+    display: none;
 }
 .tooltip {
     position: absolute;
@@ -203,6 +204,7 @@ body {
     border: 1px solid #ccc;
     height: 100%;
     box-sizing: border-box;
+    gap: 40px;
 }
 .stats-section h3 {
     margin-bottom: 20px;
@@ -259,6 +261,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    white-space: pre-line;
 }
 .header-row h2 {
     margin: 0;
@@ -300,6 +303,7 @@ body {
 
 .graph-container {
     text-align: center;
+    margin-bottom: 80px;
 }
 
 .graph-image {
@@ -310,7 +314,16 @@ body {
 }
 
 .graph-caption {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #666;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+}
+
+.section-caption {
+    font-size: 16px; /* graph-caption(20px)보다 작게 */
+    font-weight: 500; /* bold 대신 중간 굵기 */
+    color: #666; /* 어두운 파란색으로 변경 */
+    text-align: right; /* 우측 정렬 */
+    margin-bottom: 20px; /* 아래쪽 graph-container와의 간격 */
 }

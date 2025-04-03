@@ -1,37 +1,37 @@
 // 더미 데이터
 const statsData = {
-    "age": [
-        {"name": "< 65", "percentage": "40.17", "icon": "fas fa-user", "color": "#333"}, // 40.17%
-        {"name": "≥ 65", "percentage": "59.83", "icon": "fas fa-blind", "color": "#333"} // 59.83%
+    "연령": [
+        {"name": "65세 미만", "percentage": "40.17", "icon": "fas fa-user", "color": "#333"}, // < 65
+        {"name": "65세 이상", "percentage": "59.83", "icon": "fas fa-blind", "color": "#333"} // ≥ 65
     ],
-    "sex": [
-        {"name": "Male", "percentage": "59.92", "icon": "fas fa-male", "color": "#1a73e8"}, // 59.92%
-        {"name": "Female", "percentage": "40.08", "icon": "fas fa-female", "color": "#e91e63"} // 40.08%
+    "성별": [
+        {"name": "남성", "percentage": "59.92", "icon": "fas fa-male", "color": "#1a73e8"}, // 이미 한글
+        {"name": "여성", "percentage": "40.08", "icon": "fas fa-female", "color": "#e91e63"} // 이미 한글
     ],
-    "income": [
-        {"name": "Medical aid", "percentage": "9.8", "icon": "fas fa-coins", "color": "#2ecc71"}, // 9.8%
-        {"name": "≤ 30th", "percentage": "19.94", "icon": "fas fa-coins", "color": "#2ecc71"}, // 19.94%
-        {"name": "31st - 70th", "percentage": "29.08", "icon": "fas fa-coins", "color": "#2ecc71"}, // 29.08%
-        {"name": "> 70th", "percentage": "39.51", "icon": "fas fa-coins", "color": "#2ecc71"} // 39.51%
+    "수익수준": [
+        {"name": "의료급여", "percentage": "9.8", "icon": "fas fa-coins", "color": "#2ecc71"}, // Medical aid
+        {"name": "< 30분위", "percentage": "19.94", "icon": "fas fa-coins", "color": "#2ecc71"}, // ≤ 30th
+        {"name": "31-70 분위", "percentage": "29.08", "icon": "fas fa-coins", "color": "#2ecc71"}, // 31st - 70th
+        {"name": "> 70분위", "percentage": "39.51", "icon": "fas fa-coins", "color": "#2ecc71"} // > 70th
     ],
-    "smoking": [
-        {"name": "Never", "percentage": "30.09", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 30.09%
-        {"name": "Past", "percentage": "10.17", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 10.17%
-        {"name": "Current", "percentage": "15.02", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 15.02%
-        {"name": "Unknown", "percentage": "44.72", "icon": "fas fa-smoking", "color": "#e74c3c"} // 44.72%
+    "흡연여부": [
+        {"name": "비흡연자", "percentage": "30.09", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 경험없음
+        {"name": "과거 흡연자", "percentage": "10.17", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 과거 흡현 (오타 수정)
+        {"name": "현재 흡연자", "percentage": "15.02", "icon": "fas fa-smoking", "color": "#e74c3c"}, // 흡연자
+        {"name": "알 수 없음", "percentage": "44.72", "icon": "fas fa-smoking", "color": "#e74c3c"} // 알수없음
     ],
     "bmi": [
-        {"name": "Underweight", "percentage": "1.7", "icon": "fas fa-weight", "color": "#f39c12"}, // 1.7%
-        {"name": "Normal", "percentage": "17.01", "icon": "fas fa-balance-scale", "color": "#f39c12"}, // 17.01%
-        {"name": "Overweight", "percentage": "14.51", "icon": "fas fa-weight", "color": "#f39c12"}, // 14.51%
-        {"name": "Obese", "percentage": "22.79", "icon": "fas fa-weight", "color": "#f39c12"}, // 22.79%
-        {"name": "Unknown", "percentage": "43.99", "icon": "fas fa-question", "color": "#f39c12"} // 43.99%
+        {"name": "저체중", "percentage": "1.7", "icon": "fas fa-weight", "color": "#f39c12"}, // 이미 한글
+        {"name": "정상", "percentage": "17.01", "icon": "fas fa-balance-scale", "color": "#f39c12"}, // 정상체중
+        {"name": "과체중", "percentage": "14.51", "icon": "fas fa-weight", "color": "#f39c12"}, // 이미 한글
+        {"name": "비만", "percentage": "22.79", "icon": "fas fa-weight", "color": "#f39c12"}, // 이미 한글
+        {"name": "알 수 없음", "percentage": "43.99", "icon": "fas fa-question", "color": "#f39c12"} // 알수없음
     ],
-    "comorbidity": [
-        {"name": "Hypertension", "percentage": "68.35", "icon": "fas fa-heartbeat", "color": "#9b59b6"}, // 68.35%
-        {"name": "Diabetes mellitus", "percentage": "42.91", "icon": "fas fa-syringe", "color": "#9b59b6"}, // 42.91%
-        {"name": "Dyslipidemia", "percentage": "62.40", "icon": "fas fa-tint", "color": "#9b59b6"}, // 62.40%
-        {"name": "Overall I code", "percentage": "73.71", "icon": "fas fa-diagnoses", "color": "#9b59b6"} // 73.71%
+    "동반질환": [
+        {"name": "고혈압", "percentage": "68.35", "icon": "fas fa-heartbeat", "color": "#9b59b6"}, // Hypertension
+        {"name": "당뇨병", "percentage": "42.91", "icon": "fas fa-syringe", "color": "#9b59b6"}, // Diabetes mellitus
+        {"name": "고지혈증", "percentage": "62.40", "icon": "fas fa-tint", "color": "#9b59b6"}, // Dyslipidemia
+        {"name": "기타 심혈관질환", "percentage": "73.71", "icon": "fas fa-diagnoses", "color": "#9b59b6"} // Overall I code (의미 확인 필요)
     ]
 };
 
@@ -50,36 +50,48 @@ function applyFilter() {
     window.location.href = `details.html?department=${department}&disease=${disease}&condition=${condition}&exposure=${exposure}`;
 }
 
+
+// 필터 제목 업데이트 함수
+function updateFilterTitle(view) {
+    const filterTitle = document.getElementById('filter-title');
+    const { department, disease, condition, exposure } = window.currentFilters || {};
+
+    if (view === 'stats') {
+        filterTitle.textContent = `인구사회학적 정보 (Table 1) & Main result & sensitivity analysis\n[분과: ${department}, 질환: ${disease}, 상태: ${condition}, 노출: ${exposure}]`;
+    } else if (view === 'graph') {
+        filterTitle.textContent = `하위 그룹 분석 결과\n[분과: ${department}, 질환: ${disease}, 상태: ${condition}, 노출: ${exposure}]`;
+    }
+}
+
 // details.html에서 호출
 function renderFilteredData() {
+    // 1. URL 파라미터 파싱 및 기본값 설정
     const urlParams = new URLSearchParams(window.location.search);
-    let department = urlParams.get('department');
-    let disease = urlParams.get('disease');
-    let condition = urlParams.get('condition');
-    let exposure = urlParams.get('exposure');
+    let department = urlParams.get('department') || '순환기';
+    let disease = urlParams.get('disease') || 'cicr1';
+    let condition = urlParams.get('condition') || '발생';
+    let exposure = urlParams.get('exposure') || '단기';
 
-    if (!department) department = '순환기';
-    if (!disease) disease = 'cicr1';
-    if (!condition) condition = '발생';
-    if (!exposure) exposure = '단기';
+    // 2. 필터 값을 전역 변수로 저장
+    window.currentFilters = { department, disease, condition, exposure };
 
-    const filterTitle = document.getElementById('filter-title');
-    if (filterTitle) {
-        filterTitle.textContent = `${department.charAt(0).toUpperCase() + department.slice(1)}, ${disease}, ${condition.charAt(0).toUpperCase() + condition.slice(1)}, ${exposure.charAt(0).toUpperCase() + exposure.slice(1)}`;
-    } else {
-        console.error("Element with id 'filter-title' not found.");
-    }
+    // 3. 초기 로드 시 통계 섹션 제목 설정
+    updateFilterTitle('stats');
 
+    // 4. 인구 데이터 표시
     document.getElementById('total-population').textContent = populationData.total.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '명';
     document.getElementById('percentage').textContent = '(' + populationData.percentage + '%)';
 
+    // 5. 통계 섹션 렌더링
     const statsContent = document.getElementById('stats-content');
-    statsContent.innerHTML = '';
+    statsContent.innerHTML = ''; // 기존 내용 초기화
 
     for (const category in statsData) {
+        // 카테고리 컨테이너 생성
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'stats-category';
 
+        // 카테고리 제목 생성
         const categoryTitle = document.createElement('h4');
         const titleWrapper = document.createElement('div');
         titleWrapper.style.display = 'flex';
@@ -88,6 +100,7 @@ function renderFilteredData() {
         categoryTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
         titleWrapper.appendChild(categoryTitle);
 
+        // 연령/성별 외 카테고리에 아이콘 추가
         if (category !== 'age' && category !== 'sex' && statsData[category].length > 0) {
             const icon = document.createElement('i');
             icon.className = statsData[category][0].icon;
@@ -97,13 +110,16 @@ function renderFilteredData() {
         }
         categoryDiv.appendChild(titleWrapper);
 
+        // 항목 컨테이너 생성
         const itemsDiv = document.createElement('div');
         itemsDiv.className = 'stats-items';
 
+        // 각 항목 렌더링
         statsData[category].forEach(item => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'stats-item';
 
+            // 연령/성별에만 아이콘 추가
             if (category === 'age' || category === 'sex') {
                 const icon = document.createElement('i');
                 icon.className = item.icon;
@@ -140,11 +156,13 @@ function toggleView(view) {
         graphSection.style.display = 'none';
         statsButton.classList.add('active');
         graphButton.classList.remove('active');
+        updateFilterTitle('stats'); // 통계 제목으로 업데이트
     } else if (view === 'graph') {
         statsSection.style.display = 'none';
         graphSection.style.display = 'block';
         statsButton.classList.remove('active');
         graphButton.classList.add('active');
+        updateFilterTitle('graph'); // 그래프 제목으로 업데이트
     }
 }
 
@@ -199,11 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
               const ciUpper = group.getAttribute('data-ci-upper');
               tooltip.textContent = `OR: ${or}, CI: [${ciLower}, ${ciUpper}]`;
               tooltip.style.display = 'block';
-              tooltip.style.left = `${e.pageX - 10}px`;
+              tooltip.style.left = `${e.pageX + 150}px`;
               tooltip.style.top = `${e.pageY + 180}px`;
             });
             path.addEventListener('mousemove', (e) => {
-              tooltip.style.left = `${e.pageX - 10}px`;
+              tooltip.style.left = `${e.pageX + 150}px`;
               tooltip.style.top = `${e.pageY + 180}px`;
             });
             path.addEventListener('mouseout', () => {
