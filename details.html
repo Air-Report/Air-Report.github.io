@@ -9,6 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="favicon.ico">
+    <style>
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            pointer-events: none;
+            display: none;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -25,13 +37,39 @@
 
     <div class="content">
         <h1>세부 질환 결과</h1>
-        <div class="header-row">
-            
-            <h2 id="filter-title">Filtered Health Data</h2>
-            <div class="toggle-buttons">
-                <button id="show-stats" onclick="toggleView('stats')" class="active">< 통계</button>
-                <button id="show-graph" onclick="toggleView('graph')">> 그래프</button>
-            </div>
+        <div class="filter-bar">
+            <label for="department">분과:</label>
+            <select id="department">
+                <option value="순환기">순환기</option>
+                <option value="호흡기">호흡기</option>
+                <option value="정신질환">정신질환</option>
+                <option value="신경계">신경계</option>
+                <option value="피부">피부</option>
+                <option value="류마티스">류마티스</option>
+                <option value="신장">신장</option>
+                <option value="뇌졸중">뇌졸중</option>
+                <option value="안과">안과</option>
+                <option value="소화기">소화기</option>
+                <option value="내분비">내분비</option>
+                <option value="이비인후">이비인후</option>
+            </select>
+            <label for="disease">질환:</label>
+            <select id="disease"></select>
+            <label for="condition">발생/악화:</label>
+            <select id="condition">
+                <option value="발생">발생</option>
+                <option value="악화">악화</option>
+            </select>
+            <label for="exposure">단기/장기 노출:</label>
+            <select id="exposure">
+                <option value="단기">단기</option>
+                <option value="장기">장기</option>
+            </select>
+            <button onclick="applyFilter()">필터 적용</button>
+        </div>
+        <div class="toggle-buttons">
+            <button id="show-stats" class="active" onclick="toggleView('stats')">통계분석결과</button>
+            <button id="show-graph" onclick="toggleView('graph')">하위그룹분석결과</button>
         </div>
 
         <div class="content-sections">
@@ -40,17 +78,15 @@
                     <h3>발생률</h3>
                     <div style="display: flex; justify-content: center; align-items: center; margin-top: 10px;">
                         <i class="fas fa-person population-icon"></i>
-                            <div>
-                                <p id="total-population">288,898명</p>
-                                <p id="percentage">(2.89%)</p>
-                            </div>
+                        <div>
+                            <p id="total-population">288,898명</p>
+                            <p id="percentage">(2.89%)</p>
+                        </div>
                     </div>
                 </div>
                 <div class="stats-section">
                     <h3>통계</h3>
-                    <div id="stats-content">
-                        <!-- JS로 동적 삽입 -->
-                    </div>
+                    <div id="stats-content"></div>
                 </div>
             </div>
             <div class="right-column">
@@ -58,30 +94,30 @@
                     <div class="section-caption">* 온도와 상대습도를 보정한 결과. </div>
                     <div class="graph-container">
                         <div class="graph-caption">미세먼지 단기노출(질환 발생일~질환 발생 전일)로 인한 질환 발생 위험 </div>
-                        <object type="image/svg+xml" data="static/graph_tb2.svg" id="graph-tb2-svg" class="graph-image"></object>
+                        <object type="image/svg+xml" data="static/graph_tb2_심근경색_단기_발생.svg" id="graph-tb2-svg" class="graph-image"></object>
                     </div>
                     <div class="graph-container">
                         <div class="graph-caption">미세먼지 노출 기간에 따른 건강영향</div>
-                        <object type="image/svg+xml" data="static/graph_tb4.svg" id="graph-tb4-svg" class="graph-image"></object>
+                        <object type="image/svg+xml" data="static/graph_tb4_심근경색_단기_발생.svg" id="graph-tb4-svg" class="graph-image"></object>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="graph-section" class="graph-section">
+        <div id="graph-section" class="graph-section" style="display: none;">
             <div id="graph-container">
                 <div class="graph-caption">위험요인에 따른 하위그룹 분석 결과 </div>
                 <div class="section-caption">* 온도와 상대습도를 보정한 결과. </div>
-              <object type="image/svg+xml" data="static/graph.svg" id="graph-svg"></object>
+                <object type="image/svg+xml" data="static/graph_tb3_심근경색_단기_발생.svg" id="graph-tb3-svg" class="graph-image"></object>
             </div>
-            <div class="graph-label">* p-value: 통계적 유의미성을 평가하는 지표로, 귀무가설이 참일 때 관찰된 결과가 우연히 발생할 확률을 나타냅니다. p ≤ 0.05일 경우 통계적으로 유의미함.</div></div>
-          </div>
+            <div class="graph-label">* p-value: 통계적 유의미성을 평가하는 지표로, 귀무가설이 참일 때 관찰된 결과가 우연히 발생할 확률을 나타냅니다. p ≤ 0.05일 경우 통계적으로 유의미함.</div>
+        </div>
     </div>
 
     <div class="footer">
         <div class="footer-text">
             <p>© 2025 AIR Dashboard. All rights reserved.</p>
-            <p>Contact: <a href="#" style="color: #e0e0e0;"><span class="__cf_email__" data-cfemail="b98a8c8989968b8db998908b9d988a919b96988b9dd79a9694">[email&#160;protected]</span></a> | Follow us on <a href="#" style="color: #e0e0e0;">Twitter</a></p>
+            <p>Contact: <a href="#" style="color: #e0e0e0;"><span class="__cf_email__" data-cfemail="b98a8c8989968b8db998908b9d988a919b96988b9dd79a9694">[email protected]</span></a> | Follow us on <a href="#" style="color: #e0e0e0;">Twitter</a></p>
         </div>
         <div class="footer-logos">
             <img src="static/NIoH.png" alt="NIoH Logo" class="footer-logo">
@@ -89,14 +125,10 @@
             <img src="static/sung_univ.png" alt="Sungkyunkwan University Logo" class="footer-logo">
         </div>
     </div>
-    
+
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="script.js"></script>
-    <script>
-        window.onload = function() {
-            renderFilteredData();
-        };
-    </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9311b5924f5953b4',t:'MTc0NDc4NTgxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9318c1de6b0c53df',t:'MTc0NDg1OTcxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

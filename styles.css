@@ -74,7 +74,13 @@ body {
     }
 }
 
-/* 기존 스타일 */
+/* 필터 바 */
+.filter-bar {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+}
 .filter-bar select, .filter-bar button {
     padding: 5px;
     margin: 0 5px;
@@ -90,17 +96,34 @@ body {
 .filter-bar button:hover {
     background-color: #2a4d7a;
 }
-.filter-bar {
-    padding: 10px;
-    background-color: #f0f0f0;
-    border-bottom: 1px solid #ccc;
-    text-align: center;
-}
 .filter-bar select#disease {
-    /* height: 1rem; 고정 높이 설정 (필요에 따라 조정) */
-    overflow-y: auto; /* 옵션이 많을 경우 스크롤 생성 */
     width: 10rem;
 }
+
+/* 토글 버튼 */
+.toggle-buttons {
+    float: right;
+    margin-top: -40px; /* 필터 바와 같은 높이로 조정 */
+    display: flex;
+    gap: 10px;
+}
+.toggle-buttons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #e0e0e0;
+    cursor: pointer;
+    font-size: 14px;
+}
+.toggle-buttons button:hover {
+    background-color: #d0d0d0;
+}
+.toggle-buttons button.active {
+    background-color: #1a73e8;
+    color: white;
+}
+
+/* 기존 스타일 */
 .pyramid-section {
     background-color: #f9f9f9;
     border-radius: 8px;
@@ -115,24 +138,20 @@ body {
     width: 100%;
     padding: 15px;
 }
-
 .pyramid-section.compact h3 {
     font-size: 24px;
 }
-
 .pyramid-section.compact .population-icon {
-    font-size: 80px; /* 아이콘 크기 많이 키움 */
-    color: #000; /* 검정색 */
+    font-size: 80px;
+    color: #000;
     margin-right: 25px;
 }
-
 .pyramid-section.compact #total-population {
-    font-size: 24px; /* 글씨 크기 키움 */
+    font-size: 24px;
     margin: 0;
 }
-
 .pyramid-section.compact #percentage {
-    font-size: 18px; /* 글씨 크기 키움 */
+    font-size: 18px;
     color: #888;
 }
 .pyramid-section.compact i {
@@ -144,7 +163,6 @@ body {
     font-size: 20px;
     margin: 0;
 }
-
 .stats-section {
     background-color: #f9f9f9;
     border-radius: 8px;
@@ -219,7 +237,6 @@ body {
     margin-bottom: 20px;
     text-align: center;
 }
-
 .stats-category h4 {
     margin-bottom: 10px;
     font-size: 20px;
@@ -227,13 +244,12 @@ body {
     display: inline;
 }
 .stats-category i {
-    font-size: 24px; 
+    font-size: 24px;
     vertical-align: middle;
     margin-left: 10px;
     position: relative;
     top: 5px;
 }
-
 .stats-items {
     display: flex;
     justify-content: space-around;
@@ -292,7 +308,6 @@ body {
     background-color: #2a4d7a;
     font-weight: bold;
 }
-
 .new-section {
     background-color: #f9f9f9;
     border-radius: 8px;
@@ -302,44 +317,38 @@ body {
     height: 100%;
     box-sizing: border-box;
     display: flex;
-    flex-direction: column; /* 세로 배치 */
-    gap: 20px; /* 그래프 간 간격 */
+    flex-direction: column;
+    gap: 20px;
 }
-
 .graph-container {
     text-align: center;
     margin-bottom: 80px;
 }
-
 .graph-image {
     width: 100%;
     height: auto;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 .graph-caption {
     margin-bottom: 20px;
     font-size: 20px;
     font-weight: bold;
     color: #000;
 }
-
 .section-caption {
-    font-size: 16px; /* graph-caption(20px)보다 작게 */
-    font-weight: 500; /* bold 대신 중간 굵기 */
-    color: #666; /* 어두운 파란색으로 변경 */
-    text-align: right; /* 우측 정렬 */
-    margin-bottom: 20px; /* 아래쪽 graph-container와의 간격 */
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    text-align: right;
+    margin-bottom: 20px;
 }
-
 .content-sections {
     display: flex;
     justify-content: space-between;
     width: 100%;
     gap: 2rem;
 }
-
 .overview-pyramid, .overview-map {
     flex: 1;
     text-align: center;
@@ -347,34 +356,29 @@ body {
     border-radius: 8px;
     padding: 1rem;
     box-sizing: border-box;
-    height: 55vh; /* div 높이 고정 */
+    height: 55vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* div에 그림자 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 .overview-pyramid img, .overview-map img {
     width: 100%;
-    height: 100%; /* div 높이에 맞춤 */
-    object-fit: contain; /* 비율 유지 */
+    height: 100%;
+    object-fit: contain;
     border-radius: 8px;
-    /* box-shadow 제거 */
 }
-
 @media (max-width: 768px) {
     .overview-pyramid, .overview-map {
         width: 100%;
-        height: 40vh; /* 모바일에서 조정 */
+        height: 40vh;
     }
 }
-
 .map-label, .graph-label {
     margin-top: 0.5rem;
     font-size: 20px;
     color: #000;
 }
-
 @media (max-width: 768px) {
     .content-sections {
         flex-direction: column;

@@ -1,8 +1,7 @@
-// [추가] CSV 데이터를 로드하는 공통 함수
 function loadCSVData(callback) {
     const files = [
-        { path: '/data/data_short_worse.csv', exposure: '단기', condition: '악화' },
-        { path: '/data/data_short_occur.csv', exposure: '단기', condition: '발생' }
+        { path: '/Air-Report/data/data_short_worse.csv', exposure: '단기', condition: '악화' },
+        { path: '/Air-Report/data/data_short_occur.csv', exposure: '단기', condition: '발생' }
     ];
 
     Promise.all(
@@ -38,81 +37,6 @@ function loadCSVData(callback) {
     .catch(error => console.error("CSV 파일 가져오기 오류:", error));
 }
 
-// details.html 초기화 수정
-if (window.location.pathname.includes('details.html')) {
-    document.addEventListener('DOMContentLoaded', () => {
-        loadCSVData(() => {
-            renderFilteredData();
-        });
-    });
-}
-
-// [이전] overview.html용 초기화 (단계 2)
-document.addEventListener('DOMContentLoaded', () => {
-    loadCSVData(() => {
-        const departmentSelect = document.getElementById('department');
-        const diseaseSelect = document.getElementById('disease');
-        const exposureSelect = document.getElementById('exposure');
-        const conditionSelect = document.getElementById('condition');
-
-        // 분과-질환 매핑 함수
-        function updateDiseaseMapping(exposure, condition) {
-            const diseaseOptions = {};
-            window.csvData.forEach(row => {
-                if (row["exposure"] === exposure && row["condition"] === condition) {
-                    const department = row["분과"];
-                    const disease = row["질환명"];
-                    if (department && disease) {
-                        if (!diseaseOptions[department]) {
-                            diseaseOptions[department] = new Set();
-                        }
-                        diseaseOptions[department].add(disease);
-                    }
-                }
-            });
-            for (const dept in diseaseOptions) {
-                diseaseOptions[dept] = Array.from(diseaseOptions[dept]).map(disease => ({
-                    value: disease,
-                    text: disease
-                }));
-            }
-            console.log(`분과-질환 매핑 (${exposure}, ${condition}):`, diseaseOptions);
-            return diseaseOptions;
-        }
-
-        if (departmentSelect && diseaseSelect) {
-            // 초기 매핑 및 업데이트
-            let currentExposure = exposureSelect.value || "단기";
-            let currentCondition = conditionSelect.value || "악화";
-            let diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
-            updateDiseaseOptions(departmentSelect.value, diseaseOptions);
-
-            // 분과 변경 시
-            departmentSelect.addEventListener('change', () => {
-                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
-            });
-
-            // exposure 변경 시
-            exposureSelect.addEventListener('change', () => {
-                currentExposure = exposureSelect.value;
-                diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
-                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
-            });
-
-            // condition 변경 시
-            conditionSelect.addEventListener('change', () => {
-                currentCondition = conditionSelect.value;
-                diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
-                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
-            });
-        }
-
-        // 테스트 출력
-        console.log("테스트: 순환기 심근경색", getStatsData("순환기", "심근경색", exposureSelect.value, conditionSelect.value));
-    });
-});
-
-// [이전] 질환 옵션 업데이트 함수 (단계 2)
 function updateDiseaseOptions(department, diseaseOptions) {
     const diseaseSelect = document.getElementById('disease');
     diseaseSelect.innerHTML = '';
@@ -125,14 +49,128 @@ function updateDiseaseOptions(department, diseaseOptions) {
     });
 }
 
-// [이전] CSV 데이터에서 통계 추출 함수 (단계 3)
+if (window.location.pathname.includes('details.html')) {
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCSVData(() => {
+            renderFilteredData();
+
+            const departmentSelect = document.getElementById('department');
+            const diseaseSelect = document.getElementById('disease');
+            const exposureSelect = document.getElementById('exposure');
+            const conditionSelect = document.getElementById('condition');
+
+            function updateSelectedStyles() {
+                [departmentSelect, diseaseSelect, conditionSelect, exposureSelect].forEach(select => {
+                    if (select.value) {
+                        select.classList.add('selected');
+                    } else {
+                        select.classList.remove('selected');
+                    }
+                });
+            }
+
+            if (departmentSelect && exposureSelect && conditionSelect && diseaseSelect) {
+                departmentSelect.addEventListener('change', () => {
+                    const diseaseOptions = updateDiseaseMapping(exposureSelect.value, conditionSelect.value);
+                    updateDiseaseOptions(departmentSelect.value, diseaseOptions);
+                    updateSelectedStyles();
+                });
+                exposureSelect.addEventListener('change', () => {
+                    const diseaseOptions = updateDiseaseMapping(exposureSelect.value, conditionSelect.value);
+                    updateDiseaseOptions(departmentSelect.value, diseaseOptions);
+                    updateSelectedStyles();
+                });
+                conditionSelect.addEventListener('change', () => {
+                    const diseaseOptions = updateDiseaseMapping(exposureSelect.value, conditionSelect.value);
+                    updateDiseaseOptions(departmentSelect.value, diseaseOptions);
+                    updateSelectedStyles();
+                });
+                diseaseSelect.addEventListener('change', () => {
+                    updateSelectedStyles();
+                });
+            }
+
+            // SVG 툴팁 초기화
+            ['graph-tb2-svg', 'graph-tb3-svg', 'graph-tb4-svg'].forEach(id => {
+                const svgObject = document.getElementById(id);
+                if (svgObject) {
+                    svgObject.addEventListener('load', () => {
+                        setupSvgTooltip(svgObject);
+                    });
+                    if (svgObject.contentDocument) {
+                        setupSvgTooltip(svgObject);
+                    }
+                }
+            });
+        });
+    });
+}
+function updateDiseaseMapping(exposure, condition) {
+    const diseaseOptions = {};
+    if (window.csvData) {
+        window.csvData.forEach(row => {
+            if (row["exposure"] === exposure && row["condition"] === condition) {
+                const department = row["분과"];
+                const disease = row["질환명"];
+                if (department && disease) {
+                    if (!diseaseOptions[department]) {
+                        diseaseOptions[department] = new Set();
+                    }
+                    diseaseOptions[department].add(disease);
+                }
+            }
+        });
+        for (const dept in diseaseOptions) {
+            diseaseOptions[dept] = Array.from(diseaseOptions[dept]).map(disease => ({
+                value: disease,
+                text: disease
+            }));
+        }
+    }
+    console.log(`분과-질환 매핑 (${exposure}, ${condition}):`, diseaseOptions);
+    return diseaseOptions;
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadCSVData(() => {
+        const departmentSelect = document.getElementById('department');
+        const diseaseSelect = document.getElementById('disease');
+        const exposureSelect = document.getElementById('exposure');
+        const conditionSelect = document.getElementById('condition');
+
+        if (departmentSelect && diseaseSelect) {
+            let currentExposure = exposureSelect.value || "단기";
+            let currentCondition = conditionSelect.value || "악화";
+            let diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
+            updateDiseaseOptions(departmentSelect.value, diseaseOptions);
+
+            departmentSelect.addEventListener('change', () => {
+                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
+            });
+
+            exposureSelect.addEventListener('change', () => {
+                currentExposure = exposureSelect.value;
+                diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
+                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
+            });
+
+            conditionSelect.addEventListener('change', () => {
+                currentCondition = conditionSelect.value;
+                diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
+                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
+            });
+        }
+    });
+});
+
 function getStatsData(department, disease, exposure, condition) {
     if (!window.csvData) {
         console.error("CSV 데이터가 로드되지 않았습니다.");
         return { statsData: {}, populationData: { total: "N/A", percentage: "N/A" } };
     }
 
-    console.log("입력값:", { department, disease, exposure, condition }); // 디버깅용
+    console.log("입력값:", { department, disease, exposure, condition });
     const filteredData = window.csvData.filter(row => {
         const match = row["분과"] === department && 
                       row["질환명"] === disease && 
@@ -154,7 +192,6 @@ function getStatsData(department, disease, exposure, condition) {
     const totalPopulation = totalRow ? totalRow["대상자수"] : "N/A";
     const totalNum = parseInt(totalPopulation.replace(/,/g, '')) || 0;
     const percentage = ((totalNum / 10000000) * 100).toFixed(2);
-    // statsData 생성
     const statsData = {
         "연령": [
             { "name": "65세 미만", "percentage": getVariableData("age650").percentage, "icon": "fas fa-user", "color": "#333" },
@@ -230,7 +267,7 @@ function getStatsData(department, disease, exposure, condition) {
         ],
         "천식": [
             { "name": "1년 이내 천식 없음", "percentage": getVariableData("Asthma0").percentage || getVariableData("asthma0").percentage },
-            { "name": "1년 이내 천식 있음", "percentage": getVariableData("Asthma1").percentage || getVariableData("asthma1").percentage }
+            { "name": "1년 이내 천식 있음", "percentage": getVariableData("Asthma1").percentage || getVariableData("asthma0").percentage }
         ],
         "폐렴": [
             { "name": "5년 이내 폐렴 없음", "percentage": getVariableData("Pneumo0").percentage },
@@ -350,7 +387,6 @@ function getStatsData(department, disease, exposure, condition) {
         ]
     };
 
-    // 그룹별 아이콘 설정 (연령, 성별 제외)
     const groupIcons = {
         "수익수준": { icon: "fas fa-coins", color: "#2ecc71" },
         "흡연여부": { icon: "fas fa-smoking", color: "#e74c3c" },
@@ -420,217 +456,51 @@ function getStatsData(department, disease, exposure, condition) {
     };
 }
 
-// [추가] details.html용 초기화 (단계 4)
-// if (window.location.pathname.includes('details.html')) {
-//     loadCSVData(() => {
-//         renderFilteredData();
-//     });
-// }
-
-// [수정] renderFilteredData 함수 (단계 4)
-// function renderFilteredData() {
-//     const urlParams = new URLSearchParams(window.location.search);
-//     const department = urlParams.get('department') || '순환기';
-//     const disease = urlParams.get('disease') || 'circ1';
-//     const condition = urlParams.get('condition') || '악화';
-//     const exposure = urlParams.get('exposure') || '단기';
-
-//     window.currentFilters = { department, disease, condition, exposure };
-//     updateFilterTitle('stats');
-
-//     const { statsData, populationData } = getStatsData(department, disease, exposure, condition);
-
-//     document.getElementById('total-population').textContent = populationData.total.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '명';
-//     document.getElementById('percentage').textContent = '(' + populationData.percentage + '%)';
-
-//     const statsContent = document.getElementById('stats-content');
-//     statsContent.innerHTML = '';
-
-//     for (const category in statsData) {
-//         const categoryDiv = document.createElement('div');
-//         categoryDiv.className = 'stats-category';
-
-//         const categoryTitle = document.createElement('h4');
-//         const titleWrapper = document.createElement('div');
-//         titleWrapper.style.display = 'flex';
-//         titleWrapper.style.alignItems = 'center';
-//         titleWrapper.style.justifyContent = 'center';
-//         categoryTitle.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-//         titleWrapper.appendChild(categoryTitle);
-
-//         if (category !== '연령' && category !== '성별' && statsData[category].length > 0) {
-//             const icon = document.createElement('i');
-//             icon.className = statsData[category][0].icon;
-//             icon.style.color = statsData[category][0].color;
-//             icon.style.marginLeft = '10px';
-//             titleWrapper.appendChild(icon);
-//         }
-//         categoryDiv.appendChild(titleWrapper);
-
-//         const itemsDiv = document.createElement('div');
-//         itemsDiv.className = 'stats-items';
-
-//         statsData[category].forEach(item => {
-//             const itemDiv = document.createElement('div');
-//             itemDiv.className = 'stats-item';
-
-//             if (category === '연령' || category === '성별') {
-//                 const icon = document.createElement('i');
-//                 icon.className = item.icon;
-//                 icon.style.color = item.color;
-//                 itemDiv.appendChild(icon);
-//             }
-
-//             const name = document.createElement('p');
-//             name.textContent = item.name;
-//             itemDiv.appendChild(name);
-
-//             const percentage = document.createElement('p');
-//             percentage.className = 'percentage';
-//             percentage.textContent = item.percentage + '%';
-//             itemDiv.appendChild(percentage);
-
-//             itemsDiv.appendChild(itemDiv);
-//         });
-
-//         categoryDiv.appendChild(itemsDiv);
-//         statsContent.appendChild(categoryDiv);
-//     }
-// }
-
 function renderFilteredData() {
     const urlParams = new URLSearchParams(window.location.search);
     const department = urlParams.get('department') || '순환기';
-    const disease = urlParams.get('disease') || 'circ1';
-    const condition = urlParams.get('condition') || '악화';
+    const disease = urlParams.get('disease') || '심근경색';
+    const condition = urlParams.get('condition') || '발생';
     const exposure = urlParams.get('exposure') || '단기';
 
+    const departmentSelect = document.getElementById('department');
+    const diseaseSelect = document.getElementById('disease');
+    const conditionSelect = document.getElementById('condition');
+    const exposureSelect = document.getElementById('exposure');
+
+    if (departmentSelect && conditionSelect && exposureSelect) {
+        departmentSelect.value = department;
+        conditionSelect.value = condition;
+        exposureSelect.value = exposure;
+        [departmentSelect, conditionSelect, exposureSelect].forEach(select => {
+            if (select.value) select.classList.add('selected');
+        });
+    }
+
+    if (window.csvData && diseaseSelect) {
+        const diseaseOptions = updateDiseaseMapping(exposure, condition);
+        updateDiseaseOptions(department, diseaseOptions);
+        if (diseaseOptions[department]?.some(opt => opt.value === disease)) {
+            diseaseSelect.value = disease;
+            diseaseSelect.classList.add('selected');
+        } else {
+            diseaseSelect.value = diseaseOptions[department]?.[0]?.value || '';
+            if (diseaseSelect.value) diseaseSelect.classList.add('selected');
+        }
+    }
+
     window.currentFilters = { department, disease, condition, exposure };
-    updateFilterTitle('stats');
 
     const { statsData, populationData } = getStatsData(department, disease, exposure, condition);
 
     document.getElementById('total-population').textContent = populationData.total.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '명';
     document.getElementById('percentage').textContent = '(' + populationData.percentage + '%)';
 
-    // 코드명 -> 한글 매핑 객체
-    const nameMapping = {
-        "age650": "65세 미만",
-        "age651": "65세 이상",
-        "sex1": "남성",
-        "sex2": "여성",
-        "income1": "의료급여",
-        "income2": "< 30분위",
-        "income3": "31 - 70 분위",
-        "income9": ">70 분위",
-        "smk1": "비흡연자",
-        "smk2": "과거 흡연자",
-        "smk3": "현재 흡연자",
-        "smk9": "알 수 없음",
-        "bmi_cat1": "저체중",
-        "bmi_cat2": "정상체중",
-        "bmi_cat3": "과체중",
-        "bmi_cat4": "비만",
-        "bmi_cat9": "알 수 없음",
-        "dyslip0": "1년 이내 이상지질혈증 발생 안함",
-        "dyslip1": "1년 이내 이상지질혈증 발생",
-        "icode0": "1년 이내 I 코드 전체 질환 발생 안함",
-        "icode1": "1년 이내 I 코드 전체 질환 발생",
-        "CCI<2": "동반질환 지수 <2",
-        "CCI >=2": "동반질환 지수 ≥2",
-        "HF0": "1년 이내 심부전 발생 안함",
-        "HF1": "1년 이내 심부전 발생",
-        "angina0": "1년 이내 협심증 발생 안함",
-        "angina1": "1년 이내 협심증 발생",
-        "MI0": "1년 이내 심근경색 발생 안함",
-        "MI1": "1년 이내 심근경색 발생",
-        "GERD0": "1년 이내 GERD 발생 안함",
-        "GERD1": "1년 이내 GERD 발생",
-        "HIV0": "1년 이내 HIV 발생 안함",
-        "HIV1": "1년 이내 HIV 발생",
-        "TB0": "발생일 이전 결핵 발생 안함",
-        "TB1": "발생일 이전 결핵 발생",
-        "Asthma0": "1년 이내 천식 발생 안함",
-        "Asthma1": "1년 이내 천식 발생",
-        "Pneumo0": "5년 이내 폐렴 발생 안함",
-        "Pneumo1": "5년 이내 폐렴 발생",
-        "ventfib0": "1년 이내 심방세동 발생 안함",
-        "ventfib1": "1년 이내 심방세동 발생",
-        "cereb0": "1년 이내 뇌혈관 질환 발생 안함",
-        "cereb1": "1년 이내 뇌혈관 질환 발생",
-        "hfail0": "1년 이내 심부전 발생 안함",
-        "hfail1": "1년 이내 심부전 발생",
-        "ische0": "1년 이내 허혈성 심장 질환 발생 안함",
-        "ische1": "1년 이내 허혈성 심장 질환 발생",
-        "periph0": "1년 이내 말초혈관 질환 발생 안함",
-        "periph1": "1년 이내 말초혈관 질환 발생",
-        "BE0": "1년 이내 기관지확장증 발생 안함",
-        "BE1": "1년 이내 기관지확장증 발생",
-        "CTD0": "결합조직 질환 관련 없는 간질성 폐질환",
-        "CTD1": "결합조직 질환 관련 간질성 폐질환",
-        "fcode0": "1년 이내 F code 발생 안함",
-        "fcode1": "1년 이내 F code 발생",
-        "h_stroke0": "1년 이내 뇌졸중 발생 안함",
-        "h_stroke1": "1년 이내 뇌졸중 발생",
-        "h_ich0": "1년 이내 허혈성 뇌졸중 발생 안함",
-        "h_ich1": "1년 이내 허혈성 뇌졸중 발생",
-        "h_hrr0": "1년 이내 출혈성 뇌조중 발생 안함",
-        "h_hrr1": "1년 이내 출혈성 뇌졸중 발생",
-        "autoimm0": "1년 이내 자가면역질환 발생 안함",
-        "autoimm1": "1년 이내 자가면역질환 발생",
-        "cancer0": "1년 이내 암 발생 안함",
-        "cancer1": "1년 이내 암 발생",
-        "allergy0": "1년 이내 알레르기성 질환 발생 안함",
-        "allergy1": "1년 이내 알레르기성 질환 발생",
-        "psa0": "1년 이내 건선관절염 발생 안함",
-        "psa1": "1년 이내 건선관절염 발생",
-        "hodg0": "1년 이내 호지킨림프종 발생 안함",
-        "hodg1": "1년 이내 호지킨림프종 발생",
-        "nhodg0": "1년 이내 비호지킨림프종 발생 안함",
-        "nhodg1": "1년 이내 비호지킨림프종 발생",
-        "renal_tub0": "1년 이내 신세뇨관산증 발생 안함",
-        "renal_tub1": "1년 이내 신세뇨관산증 발생",
-        "liver0": "1년 이내 간질환 발생 안함",
-        "liver1": "1년 이내 간질환 발생",
-        "chr_kid0": "1년 이내 만성 신질환 발생 안함",
-        "chr_kid1": "1년 이내 만성 신질환 발생",
-        "hypo_thy0": "1년 이내 갑상샘저하증 발생 안함",
-        "hypo_thy1": "1년 이내 갑상샘저하증 발생",
-        "hyper_thy0": "1년 이내 갑상샘항진증 발생 안함",
-        "hyper_thy1": "1년 이내 갑상샘항진증 발생",
-        "copd0": "1년 이내 만성 폐쇄성 폐질환 발생 안함",
-        "copd1": "1년 이내 만성 폐쇄성 폐질환 발생",
-        "hyper0": "1년 이내 고혈압 발생 안함",
-        "hyper1": "1년 이내 고혈압 발생",
-        "DM0": "1년 이내 당뇨 발생 안함",
-        "DM1": "1년 이내 당뇨 발생",
-        "asthma0": "1년 이내 천식 발생 안함",
-        "asthma1": "1년 이내 천식 발생",
-        "atopi0": "1년 이내 아토피성 피부염 발생 안함",
-        "atopi1": "1년 이내 아토피성 피부염 발생",
-        "AKI0": "신장질환 중 급성신부전 아님",
-        "AKI1": "신장질환 중 급성신부전",
-        "CKD0": "신장질환 중 만성콩팥병 아님",
-        "CKD1": "신장질환 중 만성콩팥병",
-        "Altzh0": "1년 이내 알츠하이머병 발생 안함",
-        "Altzh1": "1년 이내 알츠하이머병 발생",
-        "Antiplatelet0": "항혈소판제 사용 없음",
-        "Antiplatelet1": "항혈소판제 사용 있음",
-        "Anticoagulant0": "항응고제 사용 없음",
-        "Anticoagulant1": "항응고제 사용 있음",
-        "ich0": "뇌졸중 중 허혈성 뇌졸중 아님",
-        "ich1": "뇌졸중 중 허혈성 뇌졸중",
-        "hrr0": "뇌졸중 중 출혈성 뇌졸중 아님",
-        "hrr1": "뇌족중 중 출혈성 뇌졸중"
-    };
-
     const statsContent = document.getElementById('stats-content');
     statsContent.innerHTML = '';
-
     for (const category in statsData) {
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'stats-category';
-
         const categoryTitle = document.createElement('h4');
         const titleWrapper = document.createElement('div');
         titleWrapper.style.display = 'flex';
@@ -663,7 +533,7 @@ function renderFilteredData() {
             }
 
             const name = document.createElement('p');
-            name.textContent = nameMapping[item.name] || item.name; // 매핑된 한글, 없으면 코드명
+            name.textContent = nameMapping[item.name] || item.name;
             itemDiv.appendChild(name);
 
             const percentage = document.createElement('p');
@@ -677,11 +547,140 @@ function renderFilteredData() {
         categoryDiv.appendChild(itemsDiv);
         statsContent.appendChild(categoryDiv);
     }
+
+    // SVG 파일 동적 로드
+    const svgIds = ['graph-tb2-svg', 'graph-tb3-svg', 'graph-tb4-svg'];
+    svgIds.forEach(id => {
+        const svgObject = document.getElementById(id);
+        if (svgObject) {
+            const graphType = id.split('-')[1]; // tb2, tb3, tb4
+            svgObject.data = `static/graph_${graphType}_${disease}_${exposure}_${condition}.svg`;
+            // SVG 다시 로드 후 툴팁 설정
+            svgObject.addEventListener('load', () => {
+                setupSvgTooltip(svgObject);
+            });
+            if (svgObject.contentDocument) {
+                setupSvgTooltip(svgObject);
+            }
+        }
+    });
+
+    const statsSection = document.querySelector('.content-sections');
+    const graphSection = document.getElementById('graph-section');
+    statsSection.style.display = 'flex';
+    graphSection.style.display = 'none';
 }
 
+const nameMapping = {
+    "age650": "65세 미만",
+    "age651": "65세 이상",
+    "sex1": "남성",
+    "sex2": "여성",
+    "income1": "의료급여",
+    "income2": "< 30분위",
+    "income3": "31 - 70 분위",
+    "income9": ">70 분위",
+    "smk1": "비흡연자",
+    "smk2": "과거 흡연자",
+    "smk3": "현재 흡연자",
+    "smk9": "알 수 없음",
+    "bmi_cat1": "저체중",
+    "bmi_cat2": "정상체중",
+    "bmi_cat3": "과체중",
+    "bmi_cat4": "비만",
+    "bmi_cat9": "알 수 없음",
+    "dyslip0": "1년 이내 이상지질혈증 발생 안함",
+    "dyslip1": "1년 이내 이상지질혈증 발생",
+    "icode0": "1년 이내 I 코드 전체 질환 발생 안함",
+    "icode1": "1년 이내 I 코드 전체 질환 발생",
+    "CCI<2": "동반질환 지수 <2",
+    "CCI >=2": "동반질환 지수 ≥2",
+    "HF0": "1년 이내 심부전 발생 안함",
+    "HF1": "1년 이내 심부전 발생",
+    "angina0": "1년 이내 협심증 발생 안함",
+    "angina1": "1년 이내 협심증 발생",
+    "MI0": "1년 이내 심근경색 발생 안함",
+    "MI1": "1년 이내 심근경색 발생",
+    "GERD0": "1년 이내 GERD 발생 안함",
+    "GERD1": "1년 이내 GERD 발생",
+    "HIV0": "1년 이내 HIV 발생 안함",
+    "HIV1": "1년 이내 HIV 발생",
+    "TB0": "발생일 이전 결핵 발생 안함",
+    "TB1": "발생일 이전 결핵 발생",
+    "Asthma0": "1년 이내 천식 발생 안함",
+    "Asthma1": "1년 이내 천식 발생",
+    "Pneumo0": "5년 이내 폐렴 발생 안함",
+    "Pneumo1": "5년 이내 폐렴 발생",
+    "ventfib0": "1년 이내 심방세동 발생 안함",
+    "ventfib1": "1년 이내 심방세동 발생",
+    "cereb0": "1년 이내 뇌혈관 질환 발생 안함",
+    "cereb1": "1년 이내 뇌혈관 질환 발생",
+    "hfail0": "1년 이내 심부전 발생 안함",
+    "hfail1": "1년 이내 심부전 발생",
+    "ische0": "1년 이내 허혈성 심장 질환 발생 안함",
+    "ische1": "1년 이내 허혈성 심장 질환 발생",
+    "periph0": "1년 이내 말초혈관 질환 발생 안함",
+    "periph1": "1년 이내 말초혈관 질환 발생",
+    "BE0": "1년 이내 기관지확장증 발생 안함",
+    "BE1": "1년 이내 기관지확장증 발생",
+    "CTD0": "결합조직 질환 관련 없는 간질성 폐질환",
+    "CTD1": "결합조직 질환 관련 간질성 폐질환",
+    "fcode0": "1년 이내 F code 발생 안함",
+    "fcode1": "1년 이내 F code 발생",
+    "h_stroke0": "1년 이내 뇌졸중 발생 안함",
+    "h_stroke1": "1년 이내 뇌졸중 발생",
+    "h_ich0": "1년 이내 허혈성 뇌졸중 발생 안함",
+    "h_ich1": "1년 이내 허혈성 뇌졸중 발생",
+    "h_hrr0": "1년 이내 출혈성 뇌조중 발생 안함",
+    "h_hrr1": "1년 이내 출혈성 뇌졸중 발생",
+    "autoimm0": "1년 이내 자가면역질환 발생 안함",
+    "autoimm1": "1년 이내 자가면역질환 발생",
+    "cancer0": "1년 이내 암 발생 안함",
+    "cancer1": "1년 이내 암 발생",
+    "allergy0": "1년 이내 알레르기성 질환 발생 안함",
+    "allergy1": "1년 이내 알레르기성 질환 발생",
+    "psa0": "1년 이내 건선관절염 발생 안함",
+    "psa1": "1년 이내 건선관절염 발생",
+    "hodg0": "1년 이내 호지킨림프종 발생 안함",
+    "hodg1": "1년 이내 호지킨림프종 발생",
+    "nhodg0": "1년 이내 비호지킨림프종 발생 안함",
+    "nhodg1": "1년 이내 비호지킨림프종 발생",
+    "renal_tub0": "1년 이내 신세뇨관산증 발생 안함",
+    "renal_tub1": "1년 이내 신세뇨관산증 발생",
+    "liver0": "1년 이내 간질환 발생 안함",
+    "liver1": "1년 이내 간질환 발생",
+    "chr_kid0": "1년 이내 만성 신질환 발생 안함",
+    "chr_kid1": "1년 이내 만성 신질환 발생",
+    "hypo_thy0": "1년 이내 갑상샘저하증 발생 안함",
+    "hypo_thy1": "1년 이내 갑상샘저하증 발생",
+    "hyper_thy0": "1년 이내 갑상샘항진증 발생 안함",
+    "hyper_thy1": "1년 이내 갑상샘항진증 발생",
+    "copd0": "1년 이내 만성 폐쇄성 폐질환 발생 안함",
+    "copd1": "1년 이내 만성 폐쇄성 폐질환 발생",
+    "hyper0": "1년 이내 고혈압 발생 안함",
+    "hyper1": "1년 이내 고혈압 발생",
+    "DM0": "1년 이내 당뇨 발생 안함",
+    "DM1": "1년 이내 당뇨 발생",
+    "asthma0": "1년 이내 천식 발생 안함",
+    "asthma1": "1년 이내 천식 발생",
+    "atopi0": "1년 이내 아토피성 피부염 발생 안함",
+    "atopi1": "1년 이내 아토피성 피부염 발생",
+    "AKI0": "신장질환 중 급성신부전 아님",
+    "AKI1": "신장질환 중 급성신부전",
+    "CKD0": "신장질환 중 만성콩팥병 아님",
+    "CKD1": "신장질환 중 만성콩팥병",
+    "Altzh0": "1년 이내 알츠하이머병 발생 안함",
+    "Altzh1": "1년 이내 알츠하이머병 발생",
+    "Antiplatelet0": "항혈소판제 사용 없음",
+    "Antiplatelet1": "항혈소판제 사용 있음",
+    "Anticoagulant0": "항응고제 사용 없음",
+    "Anticoagulant1": "항응고제 사용 있음",
+    "ich0": "뇌졸중 중 허혈성 뇌졸중 아님",
+    "ich1": "뇌졸중 중 허혈성 뇌졸중",
+    "hrr0": "뇌졸중 중 출혈성 뇌졸중 아님",
+    "hrr1": "뇌족중 중 출혈성 뇌졸중"
+};
 
-
-// [이전] 필터 제목 업데이트 함수
 function updateFilterTitle(view) {
     const filterTitle = document.getElementById('filter-title');
     const { department, disease, condition, exposure } = window.currentFilters || {};
@@ -693,17 +692,15 @@ function updateFilterTitle(view) {
     }
 }
 
-// [이전] applyFilter 함수
 function applyFilter() {
     const department = document.getElementById('department').value;
-    const disease = document.getElementById('disease').value;
+    const disease = document.getElementById('disease').value || '심근경색'; // 기본 질환 설정
     const condition = document.getElementById('condition').value;
     const exposure = document.getElementById('exposure').value;
 
-    window.location.href = `details.html?department=${department}&disease=${disease}&condition=${condition}&exposure=${exposure}`;
+    window.location.href = `details.html?department=${encodeURIComponent(department)}&disease=${encodeURIComponent(disease)}&condition=${encodeURIComponent(condition)}&exposure=${encodeURIComponent(exposure)}`;
 }
 
-// [이전] 그래프 토글 및 SVG 툴팁 함수 (기존 유지)
 function toggleView(view) {
     const statsSection = document.querySelector('.content-sections');
     const graphSection = document.getElementById('graph-section');
@@ -725,30 +722,11 @@ function toggleView(view) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const svgObject = document.getElementById('graph-svg');
-    if (svgObject) {
-        console.log('graph-svg 요소 찾음');
-        svgObject.addEventListener('load', () => {
-            console.log('SVG 로드 완료');
-            setupSvgTooltip(svgObject);
-        });
-        if (svgObject.contentDocument) {
-            console.log('SVG 이미 로드됨');
-            setupSvgTooltip(svgObject);
-        }
-    } else {
-        console.error('graph-svg 요소를 찾을 수 없습니다.');
-    }
-});
-
 function setupSvgTooltip(svgObject) {
     const svgDoc = svgObject.contentDocument;
     if (svgDoc) {
-        console.log('SVG 문서 접근 성공');
         const svg = svgDoc.querySelector('svg');
         if (svg) {
-            console.log('SVG 요소 찾음');
             svg.style.width = '100%';
             svg.style.height = 'auto';
 
@@ -757,23 +735,19 @@ function setupSvgTooltip(svgObject) {
             document.body.appendChild(tooltip);
 
             const targetGroups = svg.querySelectorAll('g[id^="rect-"]');
-            console.log('g[id^="rect-"] 개수:', targetGroups.length);
             targetGroups.forEach(group => {
                 const path = group.querySelector('path');
                 if (path) {
-                    console.log('박스 툴팁 추가:', group.id);
                     path.addEventListener('mouseover', (e) => {
                         const or = group.getAttribute('data-or');
                         const ciLower = group.getAttribute('data-ci-lower');
                         const ciUpper = group.getAttribute('data-ci-upper');
                         tooltip.textContent = `OR: ${or}, CI: [${ciLower}, ${ciUpper}]`;
                         tooltip.style.display = 'block';
-                        tooltip.style.left = `${e.pageX + 150}px`;
-                        tooltip.style.top = `${e.pageY + 180}px`;
+                        adjustTooltipPosition(e, tooltip, svgObject, path);
                     });
                     path.addEventListener('mousemove', (e) => {
-                        tooltip.style.left = `${e.pageX + 150}px`;
-                        tooltip.style.top = `${e.pageY + 180}px`;
+                        adjustTooltipPosition(e, tooltip, svgObject, path);
                     });
                     path.addEventListener('mouseout', () => {
                         tooltip.style.display = 'none';
@@ -788,4 +762,35 @@ function setupSvgTooltip(svgObject) {
     } else {
         console.error('SVG 문서에 접근할 수 없습니다.');
     }
+}
+
+function adjustTooltipPosition(e, tooltip, svgObject, path) {
+    const svgRect = svgObject.getBoundingClientRect();
+    
+    const svg = svgObject.contentDocument.querySelector('svg');
+    const point = svg.createSVGPoint();
+    point.x = e.clientX;
+    point.y = e.clientY;
+    
+    const ctm = svg.getScreenCTM();
+    const svgPoint = point.matrixTransform(ctm.inverse());
+    
+    const pathRect = path.getBBox();
+    const rectCenterX = pathRect.x + pathRect.width / 2;
+    const rectTopY = pathRect.y;
+    
+    const pageX = svgRect.left + (rectCenterX / svg.viewBox.baseVal.width) * svgRect.width;
+    const pageY = svgRect.top + (rectTopY / svg.viewBox.baseVal.height) * svgRect.height;
+    
+    let x = pageX - tooltip.offsetWidth / 2;
+    let y = pageY - tooltip.offsetHeight - 5;
+    
+    const tooltipWidth = tooltip.offsetWidth;
+    const tooltipHeight = tooltip.offsetHeight;
+    if (x + tooltipWidth > window.innerWidth) x = window.innerWidth - tooltipWidth - 5;
+    if (x < 0) x = 5;
+    if (y < 0) y = 5;
+    
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
 }
