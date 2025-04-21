@@ -385,3 +385,6 @@ body {
         gap: 1.5rem;
     }
 }
+#forest-plot-tb3-pm25, #forest-plot-tb3-pm10 {
+    width: 50%; /* 좌우로 나란히 배치 */
+}

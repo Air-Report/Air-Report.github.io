@@ -1,7 +1,9 @@
 function loadCSVData(callback) {
     const files = [
         { path: '/Air-Report/data/data_short_worse.csv', exposure: '단기', condition: '악화' },
-        { path: '/Air-Report/data/data_short_occur.csv', exposure: '단기', condition: '발생' }
+        { path: '/Air-Report/data/data_short_occur.csv', exposure: '단기', condition: '발생' },
+        { path: '/Air-Report/data/short_occur_tb3.csv', exposure: '단기', condition: '발생' },
+        { path: '/Air-Report/data/short_worse_tb3.csv', exposure: '단기', condition: '악화' }
     ];
 
     Promise.all(
@@ -456,6 +458,198 @@ function getStatsData(department, disease, exposure, condition) {
     };
 }
 
+// Y축 위치 계산 및 라벨 생성
+function calculateYPositions(groupDefs) {
+    const yPos = [];
+    const groupLabels = [];
+    const subgroupLabels = [];
+    let currentY = 0;
+    const spacing = 2;
+    const groupSpacing = 3;
+
+    for (const [groupName, subItems] of Object.entries(groupDefs)) {
+        const firstYInGroup = currentY;
+        subItems.forEach(item => {
+            subgroupLabels.push({ name: nameMapping[item] || item, y: currentY });
+            yPos.push(currentY);
+            currentY += spacing;
+        });
+        groupLabels.push({ name: groupName, y: firstYInGroup - 0.5 });
+        currentY += groupSpacing;
+    }
+    console.log("Y Positions:", yPos);
+    console.log("Group Labels:", groupLabels);
+    console.log("Subgroup Labels:", subgroupLabels);
+    return { yPos, groupLabels, subgroupLabels };
+}
+
+// 포레스트 플롯 생성 함수
+function createForestPlot(containerId, data, title) {
+    const { yPos, groupLabels, subgroupLabels } = calculateYPositions(groupDefinitions);
+    // const { oddsRatios, ciLowers, ciUppers, pValues } = data;
+    const plotData = Array.isArray(data) ? data[0] : data;
+    const { oddsRatios, ciLowers, ciUppers, pValues } = plotData;
+    console.log("createForestPlot - oddsRatios:", data);
+    console.log("createForestPlot - oddsRatios:", ciLowers);
+    console.log("createForestPlot - oddsRatios:", ciUppers);
+    console.log("createForestPlot - oddsRatios:", pValues);
+
+    // 유의미성 판단
+    function isSignificant(lower, upper) {
+        return !(lower <= 1 && upper >= 1);
+    }
+
+    // 데이터 길이 검증 및 기본값 채우기
+    const adjustedOddsRatios = [];
+    const adjustedCiLowers = [];
+    const adjustedCiUppers = [];
+    const adjustedTooltipText = [];
+    yPos.forEach((_, i) => {
+        if (i < oddsRatios.length && oddsRatios[i] !== undefined && !isNaN(oddsRatios[i])) {
+            adjustedOddsRatios.push(oddsRatios[i]);
+            adjustedCiLowers.push(ciLowers[i]);
+            adjustedCiUppers.push(ciUppers[i]);
+            const sig = isSignificant(ciLowers[i], ciUppers[i]);
+            adjustedTooltipText.push(`OR: ${oddsRatios[i].toFixed(3)}${sig ? '*' : ''}<br>CI: [${ciLowers[i].toFixed(3)}, ${ciUppers[i].toFixed(3)}]`);
+        } else {
+            adjustedOddsRatios.push(1.0);
+            adjustedCiLowers.push(1.0);
+            adjustedCiUppers.push(1.0);
+            adjustedTooltipText.push("No data");
+        }
+    });
+
+    // 데이터 준비
+    const traces = [
+        // CI 바 (빨간색 사각형 형태)
+        ...adjustedOddsRatios.map((or, i) => ({
+            x: [adjustedCiLowers[i], adjustedCiUppers[i]],
+            y: [yPos[i], yPos[i]],
+            mode: 'lines',
+            line: {
+                color: 'red',
+                width: 6
+            },
+            text: [adjustedTooltipText[i], adjustedTooltipText[i]],
+            hoverinfo: 'text',
+            hoverlabel: {
+                bgcolor: 'rgba(0, 0, 0, 0.8)',
+                font: { color: 'white' }
+            },
+            showlegend: false
+        })),
+        // OR 점
+        {
+            x: adjustedOddsRatios,
+            y: yPos,
+            mode: 'markers',
+            marker: {
+                size: 8,
+                color: 'black',
+                line: { width: 0.5, color: 'black' }
+            },
+            text: adjustedTooltipText,
+            hoverinfo: 'text',
+            showlegend: false
+        }
+    ];
+
+    // Y축 범위 계산 (그룹 이름 포함)
+    const yMin = Math.min(...yPos, ...groupLabels.map(g => g.y)) - 1;
+    const yMax = Math.max(...yPos) + 1;
+
+    // 레이아웃 설정
+    const layout = {
+        title: {
+            text: title,
+            x: 3.5,
+            xanchor: 'left',
+            pad: { t: 20 }
+        },
+        xaxis: {
+            title: 'Odds Ratio',
+            range: [
+                Math.max(0.85, 1.00 - Math.max(Math.abs(Math.min(...adjustedCiLowers) - 1.00), Math.abs(Math.max(...adjustedCiUppers) - 1.00)) - 0.01),
+                Math.min(1.1, 1.00 + Math.max(Math.abs(Math.min(...adjustedCiLowers) - 1.00), Math.abs(Math.max(...adjustedCiUppers) - 1.00)) + 0.01)
+            ],
+            tickvals: (() => {
+                const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
+                const maxVal = Math.min(1.1, Math.max(...adjustedCiUppers));
+                if (maxVal - minVal < 0.04) { // 범위가 0.04보다 작을 경우
+                    return [0.98, 0.99, 1.00, 1.01, 1.02];
+                }
+                const step = (maxVal - minVal) / 4;
+                return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => Math.round(val * 100) / 100);
+            })(),
+            ticktext: (() => {
+                const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
+                const maxVal = Math.min(1.1, Math.max(...adjustedCiUppers));
+                if (maxVal - minVal < 0.04) {
+                    return ['0.98', '0.99', '1.00', '1.01', '1.02'];
+                }
+                const step = (maxVal - minVal) / 4;
+                return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => val.toFixed(2));
+            })(),
+            tickangle: 0,
+            showgrid: false,
+            zeroline: true,
+            zerolinecolor: 'gray',
+            zerolinewidth: 1,
+            linecolor: 'black',
+            linewidth: 1
+        },
+        yaxis: {
+            range: [yMax, yMin],
+            tickvals: yPos,
+            ticktext: subgroupLabels.map(s => s.name),
+            showgrid: true,
+            gridcolor: 'lightgray',
+            gridwidth: 1,
+            zeroline: false
+        },
+        shapes: [
+            {
+                type: 'line',
+                x0: 1,
+                x1: 1,
+                y0: yMin,
+                y1: yMax,
+                line: { color: 'gray', width: 1, dash: 'dash' }
+            }
+        ],
+        annotations: [
+            ...groupLabels.map(g => ({
+                x: -0.05, // 화면 좌측 기준으로 설정
+                xref: 'paper', // 그래프 데이터 범위가 아닌 화면 기준
+                y: g.y - 0.5,
+                text: g.name,
+                xanchor: 'right',
+                yanchor: 'bottom',
+                showarrow: false,
+                font: { size: 14, weight: 'bold' }
+            })),
+            ...Object.entries(pValues).map(([groupName, pValue], idx) => ({
+                x: 1.05, // 화면 기준으로 우측에 고정
+                xref: 'paper',
+                y: groupLabels.find(g => g.name === groupName).y + 0.5,
+                text: pValue,
+                xanchor: 'left',
+                yanchor: 'bottom',
+                showarrow: false,
+                font: { size: 10 }
+            }))
+        ],
+        margin: { l: 250, r: 100, t: 80, b: 50 }, // 왼쪽 여백 확장
+        height: Object.keys(groupDefinitions).length * 100,
+        hovermode: 'closest',
+        paper_bgcolor: '#f9f9f9',
+        plot_bgcolor: '#f9f9f9'
+    };
+
+    Plotly.newPlot(containerId, traces, layout);
+}
+
+// renderFilteredData 함수 수정 (SVG 로드 부분 제거, Plotly 호출 추가)
 function renderFilteredData() {
     const urlParams = new URLSearchParams(window.location.search);
     const department = urlParams.get('department') || '순환기';
@@ -548,14 +742,13 @@ function renderFilteredData() {
         statsContent.appendChild(categoryDiv);
     }
 
-    // SVG 파일 동적 로드
-    const svgIds = ['graph-tb2-svg', 'graph-tb3-svg', 'graph-tb4-svg'];
+    // SVG 파일 동적 로드 부분 수정 (tb3만 Plotly로 변경)
+    const svgIds = ['graph-tb2-svg', 'graph-tb4-svg'];
     svgIds.forEach(id => {
         const svgObject = document.getElementById(id);
         if (svgObject) {
-            const graphType = id.split('-')[1]; // tb2, tb3, tb4
+            const graphType = id.split('-')[1]; // tb2, tb4
             svgObject.data = `static/graph_${graphType}_${disease}_${exposure}_${condition}.svg`;
-            // SVG 다시 로드 후 툴팁 설정
             svgObject.addEventListener('load', () => {
                 setupSvgTooltip(svgObject);
             });
@@ -565,11 +758,143 @@ function renderFilteredData() {
         }
     });
 
+    // tb3는 Plotly로 렌더링
+    renderForestPlot(department, disease, exposure, condition);
+
     const statsSection = document.querySelector('.content-sections');
     const graphSection = document.getElementById('graph-section');
     statsSection.style.display = 'flex';
     graphSection.style.display = 'none';
 }
+
+// Plotly 그래프 렌더링 함수 (tb3용)
+function renderForestPlot(department, disease, exposure, condition) {
+    if (!window.csvData) {
+        console.error("CSV 데이터가 로드되지 않았습니다.");
+        return;
+    }
+
+    const filteredData = window.csvData.filter(row => row["분과"] === department && row["질환"] === disease && row["exposure"] === exposure && row["condition"] === condition);
+    console.log("renderForestPlot - filteredData:", filteredData); // filteredData 확인
+
+    const availableSubgroups = [...new Set(filteredData.map(row => row["subgroup"]))];
+
+    groupDefinitions = {};
+    for (const group in groupMapping) {
+        const matchingSubgroups = groupMapping[group].filter(subgroup => availableSubgroups.includes(subgroup));
+        if (matchingSubgroups.length > 0) {
+            groupDefinitions[group] = matchingSubgroups;
+        }
+    }
+    console.log("renderForestPlot - groupDefinitions:", groupDefinitions);
+    const subgroupToGroup = {};
+    for (const group in groupMapping) {
+        groupMapping[group].forEach(subgroup => {
+            subgroupToGroup[subgroup] = group;
+        });
+    }
+
+    const orData = [];
+    ['PM25', 'PM10'].forEach(air => {
+        const airData = filteredData.filter(row => row["air"].toLowerCase() === air.toLowerCase());
+        console.log(`renderForestPlot - airData for ${air}:`, airData); // airData 확인
+
+        const dataMap = {};
+        airData.forEach(row => {
+            const subgroup = row["subgroup"];
+            dataMap[subgroup] = {
+                OddsRatioEst: parseFloat(row["OddsRatioEst"]),
+                LowerCL: parseFloat(row["LowerCL"]),
+                UpperCL: parseFloat(row["UpperCL"]),
+                pValue: row["p-value"] || ""
+            };
+        });
+        console.log(`renderForestPlot - dataMap for ${air}:`, dataMap); // dataMap 확인
+
+        const oddsRatios = [];
+        const ciLowers = [];
+        const ciUppers = [];
+        const pValues = {};
+        for (const group in groupDefinitions) {
+            groupDefinitions[group].forEach(subgroup => {
+                if (dataMap[subgroup]) {
+                    oddsRatios.push(dataMap[subgroup].OddsRatioEst);
+                    ciLowers.push(dataMap[subgroup].LowerCL);
+                    ciUppers.push(dataMap[subgroup].UpperCL);
+                } else {
+                    oddsRatios.push(1.0);
+                    ciLowers.push(1.0);
+                    ciUppers.push(1.0);
+                }
+            });
+            const groupRows = airData.filter(row => groupMapping[group].includes(row["subgroup"]) && row["p-value"]);
+            pValues[group] = groupRows.length > 0 ? groupRows[0]["p-value"] : "";
+        }
+
+        orData.push({
+            oddsRatios,
+            ciLowers,
+            ciUppers,
+            pValues
+        });
+    });
+
+    if (orData.length > 0) {
+        createForestPlot('forest-plot-tb3-pm25', orData[0], "PM 2.5");
+    }
+    if (orData.length > 1) {
+        createForestPlot('forest-plot-tb3-pm10', orData[1], "PM 10");
+    }
+}
+
+// 그룹과 세부 그룹 매핑 정의 (한글화)
+const groupMapping = {
+    "연령": ["age650", "age651"], // 65세 미만, 65세 이상
+    "성별": ["sex1", "sex2"], // 남성, 여성
+    "수익수준": ["income1", "income2", "income3", "income9"], // < 30분위, 31 - 70 분위, >70 분위
+    "흡연여부": ["smk1", "smk2", "smk3", "smk9"], // 비흡연자, 과거 흡연자, 현재 흡연자, 알 수 없음
+    "BMI 분류": ["bmi_cat1", "bmi_cat2", "bmi_cat3", "bmi_cat4", "bmi_cat9"], // 저체중, 정상체중, 과체중, 비만, 알 수 없음
+    "이상지질혈증": ["dyslip0", "dyslip1"], // 1년 이내 이상지질혈증 발생 안함, 발생
+    "I 코드 전체 질환": ["icode0", "icode1"], // 1년 이내 I 코드 전체 질환 발생 안함, 발생
+    "동반질환 지수": ["CCI<2", "CCI >=2"], // 동반질환 지수 <2, ≥2
+    "심부전": ["HF0", "HF1", "hfail0", "hfail1"], // 1년 이내 심부전 발생 안함, 발생
+    "협심증": ["angina0", "angina1"], // 1년 이내 협심증 발생 안함, 발생
+    "심근경색": ["MI0", "MI1"], // 1년 이내 심근경색 발생 안함, 발생
+    "위식도역류질환": ["GERD0", "GERD1"], // 1년 이내 GERD 발생 안함, 발생
+    "HIV": ["HIV0", "HIV1"], // 1년 이내 HIV 발생 안함, 발생
+    "결핵": ["TB0", "TB1"], // 발생일 이전 결핵 발생 안함, 발생
+    "천식": ["Asthma0", "Asthma1", "asthma0", "asthma1"], // 1년 이내 천식 발생 안함, 발생
+    "폐렴": ["Pneumo0", "Pneumo1"], // 5년 이내 폐렴 발생 안함, 발생
+    "심방세동": ["ventfib0", "ventfib1"], // 1년 이내 심방세동 발생 안함, 발생
+    "뇌혈관 질환": ["cereb0", "cereb1"], // 1년 이내 뇌혈관 질환 발생 안함, 발생
+    "허혈성 심장 질환": ["ische0", "ische1"], // 1년 이내 허혈성 심장 질환 발생 안함, 발생
+    "말초혈관 질환": ["periph0", "periph1"], // 1년 이내 말초혈관 질환 발생 안함, 발생
+    "기관지확장증": ["BE0", "BE1"], // 1년 이내 기관지확장증 발생 안함, 발생
+    "결합조직질환 관련 폐질환": ["CTD0", "CTD1"], // 결합조직 질환 관련 없는 간질성 폐질환, 관련 있음
+    "정신질환 F 코드": ["fcode0", "fcode1"], // 1년 이내 F code 발생 안함, 발생
+    "뇌졸중": ["h_stroke0", "h_stroke1"], // 1년 이내 뇌졸중 발생 안함, 발생
+    "허혈성 뇌졸중": ["h_ich0", "h_ich1", "ich0", "ich1"], // 1년 이내 허혈성 뇌졸중 발생 안함, 발생
+    "출혈성 뇌졸중": ["h_hrr0", "h_hrr1", "hrr0", "hrr1"], // 1년 이내 출혈성 뇌졸중 발생 안함, 발생
+    "자가면역질환": ["autoimm0", "autoimm1"], // 1년 이내 자가면역질환 발생 안함, 발생
+    "암": ["cancer0", "cancer1"], // 1년 이내 암 발생 안함, 발생
+    "알레르기성 질환": ["allergy0", "allergy1"], // 1년 이내 알레르기성 질환 발생 안함, 발생
+    "건선관절염": ["psa0", "psa1"], // 1년 이내 건선관절염 발생 안함, 발생
+    "호지킨림프종": ["hodg0", "hodg1"], // 1년 이내 호지킨림프종 발생 안함, 발생
+    "비호지킨림프종": ["nhodg0", "nhodg1"], // 1년 이내 비호지킨림프종 발생 안함, 발생
+    "신세뇨관산증": ["renal_tub0", "renal_tub1"], // 1년 이내 신세뇨관산증 발생 안함, 발생
+    "간질환": ["liver0", "liver1"], // 1년 이내 간질환 발생 안함, 발생
+    "만성 신질환": ["chr_kid0", "chr_kid1", "CKD0", "CKD1"], // 1년 이내 만성 신질환 발생 안함, 발생
+    "갑상선저하증": ["hypo_thy0", "hypo_thy1"], // 1년 이내 갑상선저하증 발생 안함, 발생
+    "갑상선항진증": ["hyper_thy0", "hyper_thy1"], // 1년 이내 갑상선항진증 발생 안함, 발생
+    "만성 폐쇄성 폐질환": ["copd0", "copd1"], // 1년 이내 만성 폐쇄성 폐질환 발생 안함, 발생
+    "고혈압": ["hyper0", "hyper1"], // 1년 이내 고혈압 발생 안함, 발생
+    "당뇨병": ["DM0", "DM1"], // 1년 이내 당뇨 발생 안함, 발생
+    "아토피성 피부염": ["atopi0", "atopi1"], // 1년 이내 아토피성 피부염 발생 안함, 발생
+    "급성 신부전": ["AKI0", "AKI1"], // 신장질환 중 급성신부전 아님, 급성신부전
+    "알츠하이머병": ["Altzh0", "Altzh1"], // 1년 이내 알츠하이머병 발생 안함, 발생
+    "항혈소판제 사용": ["Antiplatelet0", "Antiplatelet1"], // 항혈소판제 사용 없음, 사용 있음
+    "항응고제 사용": ["Anticoagulant0", "Anticoagulant1"] // 항응고제 사용 없음, 사용 있음
+};
 
 const nameMapping = {
     "age650": "65세 미만",

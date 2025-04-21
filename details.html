@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <link rel="icon" type="image/png" href="favicon.ico">
     <style>
         .tooltip {
@@ -28,11 +29,10 @@
     </div>
 
     <div class="nav">
-        <a href="index.html">보고서개괄(임시)</a>
+        <a href="index.html">보고서개괄</a>
         <a href="overview.html">분석데이터소개</a>
         <a href="details.html">세부질환결과</a>
-        <a href="about.html">임시페이지</a>
-        <a href="contact.html">임시페이지</a>
+        <a href="about.html">보고서활용방식</a>
     </div>
 
     <div class="content">
@@ -66,6 +66,7 @@
                 <option value="장기">장기</option>
             </select>
             <button onclick="applyFilter()">필터 적용</button>
+            <div id="filter-title" style="text-align: center; margin: 20px 0; font-size: 18px; display: none;"></div>
         </div>
         <div class="toggle-buttons">
             <button id="show-stats" class="active" onclick="toggleView('stats')">통계분석결과</button>
@@ -105,10 +106,12 @@
         </div>
 
         <div id="graph-section" class="graph-section" style="display: none;">
-            <div id="graph-container">
-                <div class="graph-caption">위험요인에 따른 하위그룹 분석 결과 </div>
-                <div class="section-caption">* 온도와 상대습도를 보정한 결과. </div>
-                <object type="image/svg+xml" data="static/graph_tb3_심근경색_단기_발생.svg" id="graph-tb3-svg" class="graph-image"></object>
+            <div class="graph-caption">위험요인에 따른 하위그룹 분석 결과</div>
+            <div class="section-caption">* 온도와 상대습도를 보정한 결과.</div>
+            <div id="graph-container" style="display: flex; flex-direction: row; gap: 20px;">
+                
+                <div id="forest-plot-tb3-pm25"></div>
+                <div id="forest-plot-tb3-pm10"></div>
             </div>
             <div class="graph-label">* p-value: 통계적 유의미성을 평가하는 지표로, 귀무가설이 참일 때 관찰된 결과가 우연히 발생할 확률을 나타냅니다. p ≤ 0.05일 경우 통계적으로 유의미함.</div>
         </div>
@@ -129,6 +132,24 @@
     <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="script.js"></script>
+    <script>
+        function applyFilter() {
+            const department = document.getElementById('department').value;
+            const disease = document.getElementById('disease').value || '심근경색';
+            const condition = document.getElementById('condition').value;
+            const exposure = document.getElementById('exposure').value;
+    
+            // URL 파라미터 업데이트
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('department', department);
+            urlParams.set('disease', disease);
+            urlParams.set('condition', condition);
+            urlParams.set('exposure', exposure);
+            window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+    
+            renderFilteredData(department, disease, exposure, condition);
+        }
+    </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9311b5924f5953b4',t:'MTc0NDc4NTgxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9318c1de6b0c53df',t:'MTc0NDg1OTcxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
