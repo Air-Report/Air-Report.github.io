@@ -172,6 +172,8 @@ body {
     padding: 20px;
     border: 1px solid #ccc;
     text-align: center;
+    flex-wrap: wrap; /* 줄바꿈 허용 */
+    gap: 20px; /* 그룹 간 간격 */
 }
 .map-label, .graph-label {
     margin-top: 10px;
@@ -234,8 +236,14 @@ body {
     font-size: 24px;
 }
 .stats-category {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-align: center;
+    width: 45%; /* 기본적으로 2개 그룹이 한 행에 배치 */
+    box-sizing: border-box;
+    gap: 10px;
+}
+.stats-category:has(.stats-items > .stats-item:nth-child(3)) {
+    width: 100%;
 }
 .stats-category h4 {
     margin-bottom: 10px;
