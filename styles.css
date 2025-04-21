@@ -240,7 +240,7 @@ body {
     text-align: center;
     width: 45%; /* 기본적으로 2개 그룹이 한 행에 배치 */
     box-sizing: border-box;
-    gap: 10px;
+    
 }
 .stats-category:has(.stats-items > .stats-item:nth-child(3)) {
     width: 100%;
@@ -415,4 +415,10 @@ body {
 }
 #forest-plot-tb3-pm25, #forest-plot-tb3-pm10 {
     width: 50%;
+}
+#stats-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px; /* stats-section과 동일한 gap 설정 */
+    width: 100%; /* 부모 너비를 100%로 설정 */
 }
