@@ -1,54 +1,68 @@
 function loadCSVData(callback) {
-    const files = [
-        { path: '/Air-Report/data/data_short_worse.csv', exposure: '단기', condition: '악화' },
-        { path: '/Air-Report/data/data_short_occur.csv', exposure: '단기', condition: '발생' },
-        { path: '/Air-Report/data/short_occur_tb3.csv', exposure: '단기', condition: '발생' },
-        { path: '/Air-Report/data/short_worse_tb3.csv', exposure: '단기', condition: '악화' }
-    ];
+    const files = {
+        tb2: [
+            { path: '/Air-Report/data/short_occur_tb2.csv', exposure: '단기', condition: '발생' },
+            { path: '/Air-Report/data/short_worse_tb2.csv', exposure: '단기', condition: '악화' }
+        ],
+        tb3: [
+            { path: '/Air-Report/data/short_occur_tb3.csv', exposure: '단기', condition: '발생' },
+            { path: '/Air-Report/data/short_worse_tb3.csv', exposure: '단기', condition: '악화' }
+        ],
+        tb4: [
+            { path: '/Air-Report/data/short_occur_tb4.csv', exposure: '단기', condition: '발생' },
+            { path: '/Air-Report/data/short_worse_tb4.csv', exposure: '단기', condition: '악화' }
+        ],
+        stats: [
+            { path: '/Air-Report/data/data_short_worse.csv', exposure: '단기', condition: '악화' },
+            { path: '/Air-Report/data/data_short_occur.csv', exposure: '단기', condition: '발생' }
+        ]
+    };
 
     Promise.all(
-        files.map(file =>
-            fetch(file.path)
-                .then(response => {
-                    if (!response.ok) throw new Error(`CSV 파일 로드 실패: ${file.path}`);
-                    return response.text();
-                })
-                .then(csvText => {
-                    return new Promise((resolve) => {
-                        Papa.parse(csvText, {
-                            header: true,
-                            skipEmptyLines: true,
-                            complete: (result) => {
-                                result.data.forEach(row => {
-                                    row.exposure = file.exposure;
-                                    row.condition = file.condition;
+        Object.entries(files).map(([key, fileList]) =>
+            Promise.all(
+                fileList.map(file =>
+                    fetch(file.path)
+                        .then(response => {
+                            if (!response.ok) throw new Error(`CSV 파일 로드 실패: ${file.path}`);
+                            return response.text();
+                        })
+                        .then(csvText => {
+                            return new Promise((resolve) => {
+                                Papa.parse(csvText, {
+                                    header: true,
+                                    skipEmptyLines: true,
+                                    complete: (result) => {
+                                        result.data.forEach(row => {
+                                            row.exposure = file.exposure;
+                                            row.condition = file.condition;
+                                        });
+                                        resolve(result.data);
+                                    },
+                                    error: (error) => console.error(`CSV 파싱 오류 (${file.path}):`, error)
                                 });
-                                resolve(result.data);
-                            },
-                            error: (error) => console.error(`CSV 파싱 오류 (${file.path}):`, error)
-                        });
-                    });
-                })
+                            });
+                        })
+                )
+            ).then(results => {
+                return { key, data: [].concat(...results) };
+            })
         )
     )
     .then(results => {
-        window.csvData = [].concat(...results);
-        console.log("모든 CSV 파싱 완료:", window.csvData);
+        window.csvDataTb2 = results.find(r => r.key === 'tb2').data;
+        window.csvDataTb3 = results.find(r => r.key === 'tb3').data;
+        window.csvDataTb4 = results.find(r => r.key === 'tb4').data;
+        window.csvDataStats = results.find(r => r.key === 'stats').data;
+
+        // console.log("CSV 파싱 완료 - tb2:", window.csvDataTb2);
+        // console.log("CSV 파싱 완료 - tb3:", window.csvDataTb3);
+        // console.log("CSV 파싱 완료 - tb4:", window.csvDataTb4);
+        // console.log("CSV 파싱 완료 - stats:", window.csvDataStats);
+
         callback();
     })
     .catch(error => console.error("CSV 파일 가져오기 오류:", error));
-}
-
-function updateDiseaseOptions(department, diseaseOptions) {
-    const diseaseSelect = document.getElementById('disease');
-    diseaseSelect.innerHTML = '';
-    const diseases = diseaseOptions[department] || [];
-    diseases.forEach(disease => {
-        const option = document.createElement('option');
-        option.value = disease.value;
-        option.textContent = disease.text;
-        diseaseSelect.appendChild(option);
-    });
 }
 
 if (window.location.pathname.includes('details.html')) {
@@ -107,73 +121,120 @@ if (window.location.pathname.includes('details.html')) {
         });
     });
 }
-function updateDiseaseMapping(exposure, condition) {
-    const diseaseOptions = {};
-    if (window.csvData) {
-        window.csvData.forEach(row => {
-            if (row["exposure"] === exposure && row["condition"] === condition) {
-                const department = row["분과"];
-                const disease = row["질환명"];
-                if (department && disease) {
-                    if (!diseaseOptions[department]) {
-                        diseaseOptions[department] = new Set();
-                    }
-                    diseaseOptions[department].add(disease);
-                }
-            }
-        });
-        for (const dept in diseaseOptions) {
-            diseaseOptions[dept] = Array.from(diseaseOptions[dept]).map(disease => ({
-                value: disease,
-                text: disease
-            }));
-        }
+// updateDiseaseOptions: 하드코딩된 매핑에서 질환 목록 생성
+function updateDiseaseOptions(department, condition, exposure) {
+    const diseaseSelect = document.getElementById('disease');
+    if (!diseaseSelect) {
+        console.log("updateDiseaseOptions - diseaseSelect not available");
+        return;
     }
-    console.log(`분과-질환 매핑 (${exposure}, ${condition}):`, diseaseOptions);
-    return diseaseOptions;
+
+    let diseases = [];
+    if (exposure === "단기" && condition === "발생") {
+        diseases = shortOccurMapping[department] || [];
+    } else if (exposure === "단기" && condition === "악화") {
+        diseases = shortWorseMapping[department] || [];
+    } else {
+        // 장기 노출의 경우 단기와 동일하게 설정
+        diseases = condition === "발생" ? (shortOccurMapping[department] || []) : (shortWorseMapping[department] || []);
+    }
+
+    console.log("updateDiseaseOptions - department:", department, "condition:", condition, "exposure:", exposure, "diseases:", diseases);
+
+    diseaseSelect.innerHTML = '';
+    diseases.forEach(disease => {
+        const option = document.createElement('option');
+        option.value = disease;
+        option.textContent = disease;
+        diseaseSelect.appendChild(option);
+    });
+
+    // URL 파라미터 또는 첫 번째 값으로 선택 설정
+    const urlParams = new URLSearchParams(window.location.search);
+    const disease = urlParams.get('disease') || diseases[0] || '';
+    diseaseSelect.value = disease;
+    console.log("updateDiseaseOptions - selected disease:", diseaseSelect.value);
+
+    if (diseaseSelect.value) diseaseSelect.classList.add('selected');
+}
+
+
+const shortOccurMapping = {
+    "순환기": ["심근경색", "심방세동", "뇌혈관질환", "심부전", "허혈성심질환", "말초혈관질환", "병원밖심정지"],
+    "호흡기": ["특발성폐섬유화증", "결핵", "만성폐쇄성폐질환", "천식", "기관지확장증", "비결핵성항상균감염", "알레르기 질환", "간질성폐질환"],
+    "정신질환": ["우울증", "공황발작", "양극성장애", "자해"],
+    "신경계": ["혈관성치매"],
+    "피부": ["건선", "주사"],
+    "류마티스": ["쇼그렌증후군"],
+    "이비인후": ["만성부비동염", "알레르기성비염"],
+    "신장": ["전체신장질환"],
+    "뇌졸중": ["뇌졸중 전체", "허혈성 뇌졸중", "출혈성 뇌졸중"],
+    "안과": ["망막동맥폐쇄", "망막정맥폐쇄", "비감염성전방포도막염", "비감염성비전방포도막염", "비감염성공막염", "안구건조증", "알레르기성결막염", "안검염", "백내장"]
+};
+
+// 단기 악화 매핑
+const shortWorseMapping = {
+    "순환기": ["circ1", "circ2", "circ3", "circ4", "circ5"],
+    "호흡기": ["특발성폐섬유화증", "만성폐쇄성폐질환", "천식", "기관지확장증", "간질성폐질환"],
+    "정신질환": ["우울증", "공황발작", "양극성장애", "조현병(psy6)"],
+    "신경계": ["치매", "neuro2", "neuro3", "neuro4"],
+    "피부": ["derma1", "derma3"],
+    "류마티스": ["쇼그렌증후군"],
+    "이비인후": ["알레르기성비염"],
+    "신장": ["renal1(말기신부전)", "renal2(신장이식)", "renal3(전체신장질환)"],
+    "뇌졸중": ["뇌졸중 전체"],
+    "안과": ["eye3", "eye4", "eye5"],
+    "소화기": ["inte1", "inte2"],
+    "내분비": ["2형당뇨병"]
+};
+
+// 분과 목록 정의 (setDepartmentOptions 위에 추가)
+const departmentsForShortOccur = ["순환기", "호흡기", "정신질환", "신경계", "피부", "류마티스", "이비인후", "신장", "뇌졸중", "안과"];
+const departmentsForShortWorse = ["순환기", "호흡기", "정신질환", "신경계", "피부", "류마티스", "이비인후", "신장", "뇌졸중", "안과", "소화기", "내분비"];
+
+
+
+// setDepartmentOptions: 하드코딩된 분과 목록 설정
+function setDepartmentOptions(condition, exposure) {
+    const departmentSelect = document.getElementById('department');
+    if (!departmentSelect) {
+        console.log("setDepartmentOptions - departmentSelect not available");
+        return;
+    }
+
+    const departments = (exposure === "단기" && condition === "발생") ? departmentsForShortOccur : departmentsForShortWorse;
+
+    console.log("setDepartmentOptions - condition:", condition, "exposure:", exposure, "departments:", departments);
+
+    departmentSelect.innerHTML = '';
+    departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept;
+        option.textContent = dept;
+        departmentSelect.appendChild(option);
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const department = urlParams.get('department') || departments[0];
+    departmentSelect.value = department;
+    console.log("setDepartmentOptions - selected department:", departmentSelect.value);
 }
 
 
 document.addEventListener('DOMContentLoaded', () => {
     loadCSVData(() => {
-        const departmentSelect = document.getElementById('department');
-        const diseaseSelect = document.getElementById('disease');
-        const exposureSelect = document.getElementById('exposure');
-        const conditionSelect = document.getElementById('condition');
-
-        if (departmentSelect && diseaseSelect) {
-            let currentExposure = exposureSelect.value || "단기";
-            let currentCondition = conditionSelect.value || "악화";
-            let diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
-            updateDiseaseOptions(departmentSelect.value, diseaseOptions);
-
-            departmentSelect.addEventListener('change', () => {
-                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
-            });
-
-            exposureSelect.addEventListener('change', () => {
-                currentExposure = exposureSelect.value;
-                diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
-                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
-            });
-
-            conditionSelect.addEventListener('change', () => {
-                currentCondition = conditionSelect.value;
-                diseaseOptions = updateDiseaseMapping(currentExposure, currentCondition);
-                updateDiseaseOptions(departmentSelect.value, diseaseOptions);
-            });
-        }
+        renderFilteredData(); // renderFilteredData 호출로 통합
     });
 });
 
 function getStatsData(department, disease, exposure, condition) {
-    if (!window.csvData) {
+    if (!window.csvDataStats) {
         console.error("CSV 데이터가 로드되지 않았습니다.");
         return { statsData: {}, populationData: { total: "N/A", percentage: "N/A" } };
     }
 
     console.log("입력값:", { department, disease, exposure, condition });
-    const filteredData = window.csvData.filter(row => {
+    const filteredData = window.csvDataStats.filter(row => {
         const match = row["분과"] === department && 
                       row["질환명"] === disease && 
                       row["exposure"] === exposure && 
@@ -639,8 +700,8 @@ function createForestPlot(containerId, data, title) {
                 font: { size: 10 }
             }))
         ],
-        margin: { l: 250, r: 100, t: 80, b: 50 }, // 왼쪽 여백 확장
-        height: Object.keys(groupDefinitions).length * 100,
+        margin: { l: 200, r: 100, t: 80, b: 50 }, // 왼쪽 여백 확장
+        height: Object.keys(groupDefinitions).length * 120,
         hovermode: 'closest',
         paper_bgcolor: '#f9f9f9',
         plot_bgcolor: '#f9f9f9'
@@ -649,7 +710,6 @@ function createForestPlot(containerId, data, title) {
     Plotly.newPlot(containerId, traces, layout);
 }
 
-// renderFilteredData 함수 수정 (SVG 로드 부분 제거, Plotly 호출 추가)
 function renderFilteredData() {
     const urlParams = new URLSearchParams(window.location.search);
     const department = urlParams.get('department') || '순환기';
@@ -662,25 +722,42 @@ function renderFilteredData() {
     const conditionSelect = document.getElementById('condition');
     const exposureSelect = document.getElementById('exposure');
 
-    if (departmentSelect && conditionSelect && exposureSelect) {
-        departmentSelect.value = department;
+    console.log("renderFilteredData - Initial values:", { department, disease, condition, exposure });
+
+    if (conditionSelect && exposureSelect) {
+        // 필터바 값 설정 (URL 파라미터 반영)
         conditionSelect.value = condition;
         exposureSelect.value = exposure;
-        [departmentSelect, conditionSelect, exposureSelect].forEach(select => {
+        departmentSelect.value = department;
+        diseaseSelect.value = disease;
+
+        [conditionSelect, exposureSelect, departmentSelect, diseaseSelect].forEach(select => {
             if (select.value) select.classList.add('selected');
         });
-    }
 
-    if (window.csvData && diseaseSelect) {
-        const diseaseOptions = updateDiseaseMapping(exposure, condition);
-        updateDiseaseOptions(department, diseaseOptions);
-        if (diseaseOptions[department]?.some(opt => opt.value === disease)) {
-            diseaseSelect.value = disease;
-            diseaseSelect.classList.add('selected');
-        } else {
-            diseaseSelect.value = diseaseOptions[department]?.[0]?.value || '';
-            if (diseaseSelect.value) diseaseSelect.classList.add('selected');
-        }
+        // condition 변경 시 department 및 질환 목록 업데이트
+        conditionSelect.onchange = () => {
+            console.log("conditionSelect changed to:", conditionSelect.value);
+            setDepartmentOptions(conditionSelect.value, exposureSelect.value);
+            updateDiseaseOptions(departmentSelect.value, conditionSelect.value, exposureSelect.value);
+        };
+
+        // exposure 변경 시 department 및 질환 목록 업데이트
+        exposureSelect.onchange = () => {
+            console.log("exposureSelect changed to:", exposureSelect.value);
+            setDepartmentOptions(conditionSelect.value, exposureSelect.value);
+            updateDiseaseOptions(departmentSelect.value, conditionSelect.value, exposureSelect.value);
+        };
+
+        // department 변경 시 질환 목록 업데이트
+        departmentSelect.onchange = () => {
+            console.log("departmentSelect changed to:", departmentSelect.value);
+            updateDiseaseOptions(departmentSelect.value, conditionSelect.value, exposureSelect.value);
+        };
+
+        // 초기 설정
+        setDepartmentOptions(condition, exposure);
+        updateDiseaseOptions(department, condition, exposure);
     }
 
     window.currentFilters = { department, disease, condition, exposure };
@@ -740,26 +817,11 @@ function renderFilteredData() {
 
         categoryDiv.appendChild(itemsDiv);
         statsContent.appendChild(categoryDiv);
-    }
+    };
 
-    // SVG 파일 동적 로드 부분 수정 (tb3만 Plotly로 변경)
-    const svgIds = ['graph-tb2-svg', 'graph-tb4-svg'];
-    svgIds.forEach(id => {
-        const svgObject = document.getElementById(id);
-        if (svgObject) {
-            const graphType = id.split('-')[1]; // tb2, tb4
-            svgObject.data = `static/graph_${graphType}_${disease}_${exposure}_${condition}.svg`;
-            svgObject.addEventListener('load', () => {
-                setupSvgTooltip(svgObject);
-            });
-            if (svgObject.contentDocument) {
-                setupSvgTooltip(svgObject);
-            }
-        }
-    });
-
-    // tb3는 Plotly로 렌더링
+    renderForestPlotTb2(department, disease, exposure, condition);
     renderForestPlot(department, disease, exposure, condition);
+    renderForestPlotTb4(department, disease, exposure, condition);
 
     const statsSection = document.querySelector('.content-sections');
     const graphSection = document.getElementById('graph-section');
@@ -769,12 +831,12 @@ function renderFilteredData() {
 
 // Plotly 그래프 렌더링 함수 (tb3용)
 function renderForestPlot(department, disease, exposure, condition) {
-    if (!window.csvData) {
+    if (!window.csvDataTb3) {
         console.error("CSV 데이터가 로드되지 않았습니다.");
         return;
     }
 
-    const filteredData = window.csvData.filter(row => row["분과"] === department && row["질환"] === disease && row["exposure"] === exposure && row["condition"] === condition);
+    const filteredData = window.csvDataTb3.filter(row => row["분과"] === department && row["질환"] === disease && row["exposure"] === exposure && row["condition"] === condition);
     console.log("renderForestPlot - filteredData:", filteredData); // filteredData 확인
 
     const availableSubgroups = [...new Set(filteredData.map(row => row["subgroup"]))];
@@ -844,6 +906,443 @@ function renderForestPlot(department, disease, exposure, condition) {
     }
     if (orData.length > 1) {
         createForestPlot('forest-plot-tb3-pm10', orData[1], "PM 10");
+    }
+}
+
+
+function createForestPlotTb2(containerId, data, title) {
+    console.log("createForestPlotTb2 - data:", data);
+
+    const yPos = [0];
+    const groupLabels = [{ name: "Adjust", y: -0.5 }];
+    const subgroupLabels = [{ name: "Adjust", y: 0 }];
+    console.log("createForestPlotTb2 - yPos:", yPos);
+
+    const { oddsRatios, ciLowers, ciUppers, pValues } = data;
+
+    function isSignificant(lower, upper) {
+        return !(lower <= 1 && upper >= 1);
+    }
+
+    const adjustedOddsRatios = [];
+    const adjustedCiLowers = [];
+    const adjustedCiUppers = [];
+    const adjustedTooltipText = [];
+    yPos.forEach((_, i) => {
+        if (i < oddsRatios.length && oddsRatios[i] !== undefined && !isNaN(oddsRatios[i])) {
+            adjustedOddsRatios.push(oddsRatios[i]);
+            adjustedCiLowers.push(ciLowers[i]);
+            adjustedCiUppers.push(ciUppers[i]);
+            const sig = isSignificant(ciLowers[i], ciUppers[i]);
+            adjustedTooltipText.push(`OR: ${oddsRatios[i].toFixed(3)}${sig ? '*' : ''}<br>CI: [${ciLowers[i].toFixed(3)}, ${ciUppers[i].toFixed(3)}]`);
+        } else {
+            adjustedOddsRatios.push(1.0);
+            adjustedCiLowers.push(1.0);
+            adjustedCiUppers.push(1.0);
+            adjustedTooltipText.push("No data");
+        }
+    });
+
+    const traces = [
+        ...adjustedOddsRatios.map((or, i) => ({
+            x: [adjustedCiLowers[i], adjustedCiUppers[i]],
+            y: [yPos[i], yPos[i]],
+            mode: 'lines',
+            line: {
+                color: 'red',
+                width: 8 // CI 바 높이 8로 설정
+            },
+            text: [adjustedTooltipText[i], adjustedTooltipText[i]],
+            hoverinfo: 'text',
+            hoverlabel: {
+                bgcolor: 'rgba(0, 0, 0, 0.8)',
+                font: { color: 'white' }
+            },
+            showlegend: false
+        })),
+        {
+            x: adjustedOddsRatios,
+            y: yPos,
+            mode: 'markers',
+            marker: {
+                size: 8,
+                color: 'black',
+                line: { width: 0.5, color: 'black' }
+            },
+            text: adjustedTooltipText,
+            hoverinfo: 'text',
+            showlegend: false
+        }
+    ];
+
+    const yMin = -1;
+    const yMax = 1;
+
+    const layout = {
+        title: {
+            text: title,
+            x: 0.5, // 중앙으로 이동
+            xanchor: 'center',
+            pad: { t: 20 }
+        },
+        xaxis: {
+            title: 'Odds Ratio',
+            range: [
+                Math.max(0.85, 1.00 - Math.max(Math.abs(Math.min(...adjustedCiLowers) - 1.00), Math.abs(Math.max(...adjustedCiUppers) - 1.00)) - 0.01),
+                Math.min(1.15, 1.00 + Math.max(Math.abs(Math.min(...adjustedCiLowers) - 1.00), Math.abs(Math.max(...adjustedCiUppers) - 1.00)) + 0.01)
+            ],
+            tickvals: (() => {
+                const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
+                const maxVal = Math.min(1.15, Math.max(...adjustedCiUppers));
+                if (maxVal - minVal < 0.04) {
+                    return [0.98, 0.99, 1.00, 1.01, 1.02];
+                }
+                const step = (maxVal - minVal) / 4;
+                return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => Math.round(val * 100) / 100);
+            })(),
+            ticktext: (() => {
+                const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
+                const maxVal = Math.min(1.15, Math.max(...adjustedCiUppers));
+                if (maxVal - minVal < 0.04) {
+                    return ['0.98', '0.99', '1.00', '1.01', '1.02'];
+                }
+                const step = (maxVal - minVal) / 4;
+                return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => val.toFixed(2));
+            })(),
+            tickangle: 0,
+            showgrid: false,
+            zeroline: true,
+            zerolinecolor: 'gray',
+            zerolinewidth: 1,
+            linecolor: 'black',
+            linewidth: 1
+        },
+        yaxis: {
+            range: [yMax, yMin],
+            tickvals: yPos,
+            ticktext: subgroupLabels.map(s => s.name),
+            showgrid: true,
+            gridcolor: 'lightgray',
+            gridwidth: 1,
+            zeroline: false
+        },
+        shapes: [
+            {
+                type: 'line',
+                x0: 1,
+                x1: 1,
+                y0: yMin,
+                y1: yMax,
+                line: { color: 'gray', width: 1, dash: 'dash' }
+            }
+        ],
+        annotations: [
+            ...Object.entries(pValues).map(([groupName, pValue], idx) => ({
+                x: 1.05,
+                xref: 'paper',
+                y: groupLabels.find(g => g.name === groupName).y + 0.5,
+                text: pValue,
+                xanchor: 'left',
+                yanchor: 'bottom',
+                showarrow: false,
+                font: { size: 10 }
+            }))
+        ],
+        margin: { l: 50, r: 50, t: 80, b: 50 },
+        height: 300,
+        hovermode: 'closest',
+        paper_bgcolor: '#f9f9f9',
+        plot_bgcolor: '#f9f9f9'
+    };
+
+    Plotly.newPlot(containerId, traces, layout);
+}
+
+
+function renderForestPlotTb2(department, disease, exposure, condition) {
+    if (!window.csvDataTb2) {
+        console.error("CSV 데이터(tb2)가 로드되지 않았습니다.");
+        return;
+    }
+
+    const filteredData = window.csvDataTb2.filter(row => 
+        row["분과"] === department && 
+        row["질환"] === disease && 
+        row["exposure"] === exposure && 
+        row["condition"] === condition && 
+        row["model"] === "adjust"
+    );
+    console.log("renderForestPlotTb2 - filteredData:", filteredData);
+
+    const orData = [];
+    ['pm25', 'pm10'].forEach(air => {
+        const airData = filteredData.filter(row => row["air"].toLowerCase() === air.toLowerCase());
+        console.log(`renderForestPlotTb2 - airData for ${air}:`, airData);
+
+        if (airData.length === 0) {
+            console.warn(`No data for ${air} in tb2`);
+            orData.push({
+                oddsRatios: [1.0],
+                ciLowers: [1.0],
+                ciUppers: [1.0],
+                pValues: { "Adjust": "" }
+            });
+            return;
+        }
+
+        const row = airData[0];
+        const oddsRatios = [parseFloat(row["OddsRatioEst"]) || 1.0];
+        const ciLowers = [parseFloat(row["LowerCL"]) || 1.0];
+        const ciUppers = [parseFloat(row["UpperCL"]) || 1.0];
+        const pValues = { "Adjust": row["p-value"] || "" };
+
+        orData.push({
+            oddsRatios,
+            ciLowers,
+            ciUppers,
+            pValues
+        });
+    });
+
+    if (orData.length > 0) {
+        createForestPlotTb2('forest-plot-tb2-pm25', orData[0], "PM 2.5");
+    }
+    if (orData.length > 1) {
+        createForestPlotTb2('forest-plot-tb2-pm10', orData[1], "PM 10");
+    }
+}
+
+function createForestPlotTb4(containerId, data, title) {
+    console.log("createForestPlotTb4 - data:", data);
+
+    const yPos = [];
+    const groupLabels = [];
+    const subgroupLabels = [];
+    let currentY = 0;
+    const spacing = 2;
+    const groupSpacing = 3;
+
+    const groupDefs = groupDefinitions;
+    console.log("createForestPlotTb4 - groupDefs:", groupDefs);
+
+    for (const [groupName, subItems] of Object.entries(groupDefs)) {
+        const firstYInGroup = currentY;
+        subItems.forEach(item => {
+            subgroupLabels.push({ name: item, y: currentY }); // Days 값을 Y축 라벨로 사용
+            yPos.push(currentY);
+            currentY += spacing;
+        });
+        groupLabels.push({ name: groupName, y: firstYInGroup - 0.5 });
+        currentY += groupSpacing;
+    }
+    console.log("Y Positions:", yPos);
+    console.log("Group Labels:", groupLabels);
+    console.log("Subgroup Labels:", subgroupLabels);
+
+    const { oddsRatios, ciLowers, ciUppers, pValues } = data;
+
+    function isSignificant(lower, upper) {
+        return !(lower <= 1 && upper >= 1);
+    }
+
+    const adjustedOddsRatios = [];
+    const adjustedCiLowers = [];
+    const adjustedCiUppers = [];
+    const adjustedTooltipText = [];
+    yPos.forEach((_, i) => {
+        if (i < oddsRatios.length && oddsRatios[i] !== undefined && !isNaN(oddsRatios[i])) {
+            adjustedOddsRatios.push(oddsRatios[i]);
+            adjustedCiLowers.push(ciLowers[i]);
+            adjustedCiUppers.push(ciUppers[i]);
+            const sig = isSignificant(ciLowers[i], ciUppers[i]);
+            adjustedTooltipText.push(`OR: ${oddsRatios[i].toFixed(3)}${sig ? '*' : ''}<br>CI: [${ciLowers[i].toFixed(3)}, ${ciUppers[i].toFixed(3)}]`);
+        } else {
+            adjustedOddsRatios.push(1.0);
+            adjustedCiLowers.push(1.0);
+            adjustedCiUppers.push(1.0);
+            adjustedTooltipText.push("No data");
+        }
+    });
+
+    const traces = [
+        ...adjustedOddsRatios.map((or, i) => ({
+            x: [adjustedCiLowers[i], adjustedCiUppers[i]],
+            y: [yPos[i], yPos[i]],
+            mode: 'lines',
+            line: {
+                color: 'red',
+                width: 8 // CI 바 높이 8로 설정
+            },
+            text: [adjustedTooltipText[i], adjustedTooltipText[i]],
+            hoverinfo: 'text',
+            hoverlabel: {
+                bgcolor: 'rgba(0, 0, 0, 0.8)',
+                font: { color: 'white' }
+            },
+            showlegend: false
+        })),
+        {
+            x: adjustedOddsRatios,
+            y: yPos,
+            mode: 'markers',
+            marker: {
+                size: 8,
+                color: 'black',
+                line: { width: 0.5, color: 'black' }
+            },
+            text: adjustedTooltipText,
+            hoverinfo: 'text',
+            showlegend: false
+        }
+    ];
+
+    const yMin = Math.min(...yPos, ...groupLabels.map(g => g.y)) - 1;
+    const yMax = Math.max(...yPos) + 1;
+
+    const layout = {
+        xaxis: {
+            title: 'Odds Ratio',
+            range: [
+                Math.max(0.85, 1.00 - Math.max(Math.abs(Math.min(...adjustedCiLowers) - 1.00), Math.abs(Math.max(...adjustedCiUppers) - 1.00)) - 0.01),
+                Math.min(1.15, 1.00 + Math.max(Math.abs(Math.min(...adjustedCiLowers) - 1.00), Math.abs(Math.max(...adjustedCiUppers) - 1.00)) + 0.01)
+            ],
+            tickvals: (() => {
+                const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
+                const maxVal = Math.min(1.15, Math.max(...adjustedCiUppers));
+                if (maxVal - minVal < 0.04) {
+                    return [0.98, 0.99, 1.00, 1.01, 1.02];
+                }
+                const step = (maxVal - minVal) / 4;
+                return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => Math.round(val * 100) / 100);
+            })(),
+            ticktext: (() => {
+                const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
+                const maxVal = Math.min(1.15, Math.max(...adjustedCiUppers));
+                if (maxVal - minVal < 0.04) {
+                    return ['0.98', '0.99', '1.00', '1.01', '1.02'];
+                }
+                const step = (maxVal - minVal) / 4;
+                return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => val.toFixed(2));
+            })(),
+            tickangle: 0,
+            showgrid: false,
+            zeroline: true,
+            zerolinecolor: 'gray',
+            zerolinewidth: 1,
+            linecolor: 'black',
+            linewidth: 1
+        },
+        yaxis: {
+            range: [yMax, yMin],
+            tickvals: yPos,
+            ticktext: subgroupLabels.map(s => s.name),
+            showgrid: true,
+            gridcolor: 'lightgray',
+            gridwidth: 1,
+            zeroline: false
+        },
+        shapes: [
+            {
+                type: 'line',
+                x0: 1,
+                x1: 1,
+                y0: yMin,
+                y1: yMax,
+                line: { color: 'gray', width: 1, dash: 'dash' }
+            }
+        ],
+        // annotations: [
+        //     ...Object.entries(pValues).map(([groupName, pValue], idx) => ({
+        //         x: 1.05,
+        //         xref: 'paper',
+        //         y: groupLabels.find(g => g.name === groupName).y + 0.5,
+        //         text: pValue,
+        //         xanchor: 'left',
+        //         yanchor: 'middle', // yanchor를 middle로 변경
+        //         showarrow: false,
+        //         font: { size: 10 }
+        //     }))
+        // ],
+        margin: { l: 50, r: 50, t: 80, b: 50 },
+        height: Object.keys(groupDefinitions["노출 기간"]).length * 80,
+        hovermode: 'closest',
+        paper_bgcolor: '#f9f9f9',
+        plot_bgcolor: '#f9f9f9'
+    };
+
+    Plotly.newPlot(containerId, traces, layout);
+}
+
+
+function renderForestPlotTb4(department, disease, exposure, condition) {
+    if (!window.csvDataTb4) {
+        console.error("CSV 데이터(tb4)가 로드되지 않았습니다.");
+        return;
+    }
+
+    const filteredData = window.csvDataTb4.filter(row => 
+        row["분과"] === department && 
+        row["질환"] === disease && 
+        row["exposure"] === exposure && 
+        row["condition"] === condition
+    );
+    console.log("renderForestPlotTb4 - filteredData:", filteredData);
+
+    const daysValues = [...new Set(filteredData.map(row => row["Days"]))].sort((a, b) => a - b);
+    groupDefinitions = { "노출 기간": daysValues };
+    console.log("renderForestPlotTb4 - groupDefinitions:", groupDefinitions);
+
+    const orData = [];
+    ['pm25', 'pm10'].forEach(air => {
+        const airData = filteredData.filter(row => row["air"].substring(0, 4).toLowerCase() === air.toLowerCase());
+        console.log(`renderForestPlotTb4 - airData for ${air}:`, airData);
+
+        const dataMap = {};
+        airData.forEach(row => {
+            const day = row["Days"];
+            const oddsRatio = parseFloat(row["OddsRatioEst"]);
+            const lowerCL = parseFloat(row["LowerCL"]);
+            const upperCL = parseFloat(row["UpperCL"]);
+            dataMap[day] = {
+                OddsRatioEst: isNaN(oddsRatio) ? 1.0 : oddsRatio,
+                LowerCL: isNaN(lowerCL) ? 1.0 : lowerCL,
+                UpperCL: isNaN(upperCL) ? 1.0 : upperCL,
+                pValue: row["p-value"] || ""
+            };
+        });
+        console.log(`renderForestPlotTb4 - dataMap for ${air}:`, dataMap);
+
+        const oddsRatios = [];
+        const ciLowers = [];
+        const ciUppers = [];
+        const pValues = {};
+        groupDefinitions["노출 기간"].forEach(day => {
+            if (dataMap[day]) {
+                oddsRatios.push(dataMap[day].OddsRatioEst);
+                ciLowers.push(dataMap[day].LowerCL);
+                ciUppers.push(dataMap[day].UpperCL);
+                pValues[day] = dataMap[day].pValue;
+            } else {
+                oddsRatios.push(1.0);
+                ciLowers.push(1.0);
+                ciUppers.push(1.0);
+                pValues[day] = "";
+            }
+        });
+
+        orData.push({
+            oddsRatios,
+            ciLowers,
+            ciUppers,
+            pValues
+        });
+    });
+
+    if (orData.length > 0) {
+        createForestPlotTb4('forest-plot-tb4-pm25', orData[0], "PM 2.5");
+    }
+    if (orData.length > 1) {
+        createForestPlotTb4('forest-plot-tb4-pm10', orData[1], "PM 10");
     }
 }
 
@@ -1019,11 +1518,24 @@ function updateFilterTitle(view) {
 
 function applyFilter() {
     const department = document.getElementById('department').value;
-    const disease = document.getElementById('disease').value || '심근경색'; // 기본 질환 설정
     const condition = document.getElementById('condition').value;
     const exposure = document.getElementById('exposure').value;
+    const disease = document.getElementById('disease').value;
 
-    window.location.href = `details.html?department=${encodeURIComponent(department)}&disease=${encodeURIComponent(disease)}&condition=${encodeURIComponent(condition)}&exposure=${encodeURIComponent(exposure)}`;
+    console.log("applyFilter - Selected values:", { department, condition, exposure, disease });
+
+    // URL 파라미터 업데이트 (새로고침 없이)
+    const params = new URLSearchParams({
+        department: department,
+        condition: condition,
+        exposure: exposure,
+        disease: disease
+    });
+    window.history.replaceState({}, '', `details.html?${params.toString()}`);
+
+    // renderFilteredData 호출로 화면 갱신
+    window.currentFilters = { department, disease, condition, exposure };
+    renderFilteredData();
 }
 
 function toggleView(view) {

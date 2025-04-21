@@ -39,33 +39,40 @@
         <div class="filter-bar">
             <label for="department">분과:</label>
             <select id="department">
+                <!-- 초기 상태는 단기 발생 기준 -->
                 <option value="순환기">순환기</option>
                 <option value="호흡기">호흡기</option>
                 <option value="정신질환">정신질환</option>
                 <option value="신경계">신경계</option>
                 <option value="피부">피부</option>
                 <option value="류마티스">류마티스</option>
+                <option value="이비인후">이비인후</option>
                 <option value="신장">신장</option>
                 <option value="뇌졸중">뇌졸중</option>
                 <option value="안과">안과</option>
-                <option value="소화기">소화기</option>
-                <option value="내분비">내분비</option>
-                <option value="이비인후">이비인후</option>
             </select>
             <label for="disease">질환:</label>
             <select id="disease">
+                <!-- 초기 상태는 순환기 기준 -->
+                <option value="심근경색">심근경색</option>
+                <option value="심방세동">심방세동</option>
+                <option value="뇌혈관질환">뇌혈관질환</option>
+                <option value="심부전">심부전</option>
+                <option value="허혈성심질환">허혈성심질환</option>
+                <option value="말초혈관질환">말초혈관질환</option>
+                <option value="병원밖심정지">병원밖심정지</option>
             </select>
-            <label for="condition">발생/악화:</label>
+            <label for="condition">상태:</label>
             <select id="condition">
                 <option value="발생">발생</option>
                 <option value="악화">악화</option>
             </select>
-            <label for="exposure">단기/장기 노출:</label>
+            <label for="exposure">노출:</label>
             <select id="exposure">
                 <option value="단기">단기</option>
                 <option value="장기">장기</option>
             </select>
-            <button onclick="applyFilter()">필터 적용</button>
+            <button onclick="applyFilter1()">필터 적용</button>
         </div>
     </div>
 
@@ -80,6 +87,27 @@
             <img src="static/sung_univ.png" alt="Sungkyunkwan University Logo" class="footer-logo">
         </div>
     </div>
+    <script>
+        function applyFilter1() {
+            const department = document.getElementById('department').value;
+            const condition = document.getElementById('condition').value;
+            const exposure = document.getElementById('exposure').value;
+            const disease = document.getElementById('disease').value;
+
+            console.log("applyFilter - Selected values:", { department, condition, exposure, disease });
+
+            // URL 파라미터 생성
+            const params = new URLSearchParams({
+                department: department,
+                condition: condition,
+                exposure: exposure,
+                disease: disease
+            });
+
+            // details.html로 이동
+            window.location.href = `details.html?${params.toString()}`;
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="script.js"></script>
 </body>

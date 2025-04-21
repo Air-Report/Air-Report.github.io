@@ -40,33 +40,40 @@
         <div class="filter-bar">
             <label for="department">분과:</label>
             <select id="department">
+                <!-- 초기 상태는 단기 발생 기준 -->
                 <option value="순환기">순환기</option>
                 <option value="호흡기">호흡기</option>
                 <option value="정신질환">정신질환</option>
                 <option value="신경계">신경계</option>
                 <option value="피부">피부</option>
                 <option value="류마티스">류마티스</option>
+                <option value="이비인후">이비인후</option>
                 <option value="신장">신장</option>
                 <option value="뇌졸중">뇌졸중</option>
                 <option value="안과">안과</option>
-                <option value="소화기">소화기</option>
-                <option value="내분비">내분비</option>
-                <option value="이비인후">이비인후</option>
             </select>
             <label for="disease">질환:</label>
-            <select id="disease"></select>
-            <label for="condition">발생/악화:</label>
+            <select id="disease">
+                <!-- 초기 상태는 순환기 기준 -->
+                <option value="심근경색">심근경색</option>
+                <option value="심방세동">심방세동</option>
+                <option value="뇌혈관질환">뇌혈관질환</option>
+                <option value="심부전">심부전</option>
+                <option value="허혈성심질환">허혈성심질환</option>
+                <option value="말초혈관질환">말초혈관질환</option>
+                <option value="병원밖심정지">병원밖심정지</option>
+            </select>
+            <label for="condition">상태:</label>
             <select id="condition">
                 <option value="발생">발생</option>
                 <option value="악화">악화</option>
             </select>
-            <label for="exposure">단기/장기 노출:</label>
+            <label for="exposure">노출:</label>
             <select id="exposure">
                 <option value="단기">단기</option>
                 <option value="장기">장기</option>
             </select>
             <button onclick="applyFilter()">필터 적용</button>
-            <div id="filter-title" style="text-align: center; margin: 20px 0; font-size: 18px; display: none;"></div>
         </div>
         <div class="toggle-buttons">
             <button id="show-stats" class="active" onclick="toggleView('stats')">통계분석결과</button>
@@ -92,14 +99,15 @@
             </div>
             <div class="right-column">
                 <div class="new-section">
-                    <div class="section-caption">* 온도와 상대습도를 보정한 결과. </div>
-                    <div class="graph-container">
-                        <div class="graph-caption">미세먼지 단기노출(질환 발생일~질환 발생 전일)로 인한 질환 발생 위험 </div>
-                        <object type="image/svg+xml" data="static/graph_tb2_심근경색_단기_발생.svg" id="graph-tb2-svg" class="graph-image"></object>
+                    <div class="graph-caption">위험요인에 따른 하위그룹 분석 결과 (tb2)</div>
+                    <div class="tb2-container">
+                        <div id="forest-plot-tb2-pm25"></div>
+                        <div id="forest-plot-tb2-pm10"></div>
                     </div>
-                    <div class="graph-container">
-                        <div class="graph-caption">미세먼지 노출 기간에 따른 건강영향</div>
-                        <object type="image/svg+xml" data="static/graph_tb4_심근경색_단기_발생.svg" id="graph-tb4-svg" class="graph-image"></object>
+                    <div class="graph-caption">위험요인에 따른 하위그룹 분석 결과 (tb4)</div>
+                    <div class="tb4-container">
+                        <div id="forest-plot-tb4-pm25"></div>
+                        <div id="forest-plot-tb4-pm10"></div>
                     </div>
                 </div>
             </div>

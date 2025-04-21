@@ -331,7 +331,8 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 .graph-caption {
-    margin-bottom: 20px;
+    margin-bottom: 5px;
+    text-align: center;
     font-size: 20px;
     font-weight: bold;
     color: #000;
@@ -385,6 +386,25 @@ body {
         gap: 1.5rem;
     }
 }
+.new-section {
+    display: flex;
+    flex-direction: column; /* tb2와 tb4를 수직 배치 */
+    gap: 20px;
+}
+.tb2-container, .tb4-container {
+    display: flex;
+    flex-direction: row; /* tb2, tb4 내부에서 PM2.5와 PM10을 수평 배치 */
+    gap: 20px;
+}
+#forest-plot-tb2-pm25, #forest-plot-tb2-pm10,
+#forest-plot-tb4-pm25, #forest-plot-tb4-pm10 {
+    width: 50%; /* 수평 배치 시 각 그래프가 50% 너비 차지 */
+}
+#graph-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
 #forest-plot-tb3-pm25, #forest-plot-tb3-pm10 {
-    width: 50%; /* 좌우로 나란히 배치 */
+    width: 50%;
 }
