@@ -227,6 +227,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+function updateCohortText(department, disease, exposure, condition) {
+    const cohortText = document.getElementById('cohort-ver');
+    console.log("updateCohortText - cohortText:", cohortText);
+    console.log("pdateCohortText - department:", department, "disease:", disease, "exposure:", exposure, "condition:", condition);
+    if (disease === '자해') {
+        cohortText.innerHTML = '*전 연령 대상 코호트';
+    } else {
+        cohortText.innerHTML = '*30세 이상 연령 대상 코호트';
+    }
+}
+
+
 function getStatsData(department, disease, exposure, condition) {
     if (!window.csvDataStats) {
         console.error("CSV 데이터가 로드되지 않았습니다.");
@@ -819,6 +832,7 @@ function renderFilteredData() {
         statsContent.appendChild(categoryDiv);
     };
 
+    updateCohortText(department, disease, exposure, condition);
     renderForestPlotTb2(department, disease, exposure, condition);
     renderForestPlot(department, disease, exposure, condition);
     renderForestPlotTb4(department, disease, exposure, condition);
