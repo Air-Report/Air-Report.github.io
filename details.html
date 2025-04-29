@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AIR Dashboard - Detailed Health Data">
-    <title>AIR Dashboard - Details</title>
+    <title>미세먼지 단기노출 건강영향보고서</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>AIR 보고서</h1>
+        <h1>미세먼지 단기노출 건강영향보고서</h1>
     </div>
 
     <div class="nav">
@@ -68,8 +68,8 @@
                 <option value="발생">발생</option>
                 <option value="악화">악화</option>
             </select>
-            <label for="exposure">노출:</label>
-            <select id="exposure">
+            <label for="exposure" style="display: none;">노출:</label>
+            <select id="exposure" style="display: none;">
                 <option value="단기">단기</option>
                 <option value="장기">장기</option>
             </select>
@@ -79,7 +79,7 @@
             <button id="show-stats" class="active" onclick="toggleView('stats')">통계분석결과</button>
             <button id="show-graph" onclick="toggleView('graph')">하위그룹분석결과</button>
         </div>
-
+        <div id="filter-title" style="display: none;"></div>
         <div class="content-sections">
             <div class="left-column">
                 <div class="pyramid-section compact">
@@ -129,11 +129,11 @@
     <div class="footer">
         <div class="footer-text">
             <p>© 2025 AIR Dashboard. All rights reserved.</p>
-            <p>Contact: <a href="#" style="color: #e0e0e0;"><span class="__cf_email__" data-cfemail="b98a8c8989968b8db998908b9d988a919b96988b9dd79a9694">[email protected]</span></a> | Follow us on <a href="#" style="color: #e0e0e0;">Twitter</a></p>
         </div>
         <div class="footer-logos">
             <img src="static/NIoH.png" alt="NIoH Logo" class="footer-logo">
-            <img src="static/samsung.png" alt="Samsung Logo" class="footer-logo">
+            <img src="static/smc.png" alt="Samsung Logo" class="footer-logo">
+            <img src="static/KEI_KorEng.jpg" alt="KEI_KorEng" class="footer-logo">
             <img src="static/sung_univ.png" alt="Sungkyunkwan University Logo" class="footer-logo">
         </div>
     </div>
@@ -146,7 +146,7 @@
             const department = document.getElementById('department').value;
             const disease = document.getElementById('disease').value || '심근경색';
             const condition = document.getElementById('condition').value;
-            const exposure = document.getElementById('exposure').value;
+            const exposure = "단기";
     
             // URL 파라미터 업데이트
             const urlParams = new URLSearchParams(window.location.search);

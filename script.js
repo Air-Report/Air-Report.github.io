@@ -161,30 +161,30 @@ function updateDiseaseOptions(department, condition, exposure) {
 
 const shortOccurMapping = {
     "순환기": ["심근경색", "심방세동", "뇌혈관질환", "심부전", "허혈성심질환", "말초혈관질환", "병원밖심정지"],
-    "호흡기": ["특발성폐섬유화증", "결핵", "만성폐쇄성폐질환", "천식", "기관지확장증", "비결핵성항상균감염", "알레르기 질환", "간질성폐질환"],
-    "정신질환": ["우울증", "공황발작", "양극성장애", "자해"],
-    "신경계": ["혈관성치매"],
-    "피부": ["건선", "주사"],
+    "호흡기": ["특발성폐섬유화증", "결핵", "만성폐쇄성폐질환", "천식", "기관지확장증", "비결핵성항상균감염", "알레르기 질환", "간질성폐질환", "간질성폐질환(CTD-related)", "간질성폐질환(CTD-unrelated)"],
+    "정신질환": ["우울증", "공황발작", "양극성장애", "자살", "자폐스펙트럼", "주의력결핍장애", "자해"],
+    "신경계": ["혈관성치매", "편두통"],
+    "피부": ["건선", "주사", "아토피성피부염"],
     "류마티스": ["쇼그렌증후군"],
     "이비인후": ["만성부비동염", "알레르기성비염"],
-    "신장": ["전체신장질환"],
-    "뇌졸중": ["뇌졸중 전체", "허혈성 뇌졸중", "출혈성 뇌졸중"],
+    "신장": ["전체신장질환", "전체신장질환(급성신부전)", "전체신장질환(만성콩팥병)"],
+    "뇌졸중": ["뇌졸중(전체)", "허혈성뇌졸중", "출혈성뇌졸중"],
     "안과": ["망막동맥폐쇄", "망막정맥폐쇄", "비감염성전방포도막염", "비감염성비전방포도막염", "비감염성공막염", "안구건조증", "알레르기성결막염", "안검염", "백내장"]
 };
 
 // 단기 악화 매핑
 const shortWorseMapping = {
-    "순환기": ["circ1", "circ2", "circ3", "circ4", "circ5"],
-    "호흡기": ["특발성폐섬유화증", "만성폐쇄성폐질환", "천식", "기관지확장증", "간질성폐질환"],
-    "정신질환": ["우울증", "공황발작", "양극성장애", "조현병(psy6)"],
-    "신경계": ["치매", "neuro2", "neuro3", "neuro4"],
-    "피부": ["derma1", "derma3"],
+    "순환기": ["심근경색", "심방세동", "뇌혈관질환", "심부전", "허혈성심질환"],
+    "호흡기": ["특발성폐섬유화증", "만성폐쇄성폐질환", "천식", "기관지확장증", "간질성폐질환", "간질성폐질환(CTD-related)", "간질성폐질환(CTD-unrelated)"],
+    "정신질환": ["우울증", "공황발작", "양극성장애", "조현병", "자폐스펙트럼", "주의력결핍장애"],
+    "신경계": ["치매", "알츠하이머", "파킨슨", "편두통"],
+    "피부": ["건선", "아토피성피부염"],
     "류마티스": ["쇼그렌증후군"],
     "이비인후": ["알레르기성비염"],
-    "신장": ["renal1(말기신부전)", "renal2(신장이식)", "renal3(전체신장질환)"],
-    "뇌졸중": ["뇌졸중 전체"],
-    "안과": ["eye3", "eye4", "eye5"],
-    "소화기": ["inte1", "inte2"],
+    "신장": ["말기신부전", "신장이식", "전체신장질환"],
+    "뇌졸중": ["뇌졸중(전체)", "허혈성뇌졸중", "출혈성뇌졸중"],
+    "안과": ["비감염성 전방 포도막염", "비감염성 비전방 포도막염", "비감염성 공막염"],
+    "소화기": ["크론병", "궤양성대장염"],
     "내분비": ["2형당뇨병"]
 };
 
@@ -232,7 +232,7 @@ function updateCohortText(department, disease, exposure, condition) {
     const cohortText = document.getElementById('cohort-ver');
     console.log("updateCohortText - cohortText:", cohortText);
     console.log("pdateCohortText - department:", department, "disease:", disease, "exposure:", exposure, "condition:", condition);
-    if (disease === '자해') {
+    if (['자해', '자폐스펙트럼', '주의력결핍장애', '편두통', '아토피성피부염'].includes(disease)) {
         cohortText.innerHTML = '*전 연령 대상 코호트';
     } else {
         cohortText.innerHTML = '*30세 이상 연령 대상 코호트';
@@ -557,16 +557,41 @@ function calculateYPositions(groupDefs) {
     return { yPos, groupLabels, subgroupLabels };
 }
 
+function calculateYPositionsTb3(groupDefs) {
+    const yPos = [];
+    const groupLabels = [];
+    const subgroupLabels = [];
+    let currentY = 0;
+    const spacing = 2;
+    const groupSpacing = 3;
+
+    for (const [groupName, subItems] of Object.entries(groupDefs)) {
+        const firstYInGroup = currentY;
+        subItems.forEach(item => {
+            subgroupLabels.push({ name: nameMappingTb3[item] || item, y: currentY });
+            yPos.push(currentY);
+            currentY += spacing;
+        });
+        groupLabels.push({ name: groupName, y: firstYInGroup });
+        currentY += groupSpacing;
+    }
+
+    console.log("calculateYPositionsTb3 - yPos:", yPos);
+    console.log("calculateYPositionsTb3 - groupLabels:", groupLabels);
+    console.log("calculateYPositionsTb3 - subgroupLabels:", subgroupLabels);
+
+    return { yPos, groupLabels, subgroupLabels };
+}
+
 // 포레스트 플롯 생성 함수
 function createForestPlot(containerId, data, title) {
-    const { yPos, groupLabels, subgroupLabels } = calculateYPositions(groupDefinitions);
-    // const { oddsRatios, ciLowers, ciUppers, pValues } = data;
+    const { yPos, groupLabels, subgroupLabels } = calculateYPositionsTb3(groupDefinitions);
     const plotData = Array.isArray(data) ? data[0] : data;
     const { oddsRatios, ciLowers, ciUppers, pValues } = plotData;
-    console.log("createForestPlot - oddsRatios:", data);
-    console.log("createForestPlot - oddsRatios:", ciLowers);
-    console.log("createForestPlot - oddsRatios:", ciUppers);
-    console.log("createForestPlot - oddsRatios:", pValues);
+    console.log("createForestPlot - oddsRatios:", oddsRatios);
+    console.log("createForestPlot - ciLowers:", ciLowers);
+    console.log("createForestPlot - ciUppers:", ciUppers);
+    console.log("createForestPlot - pValues:", pValues);
 
     // 유의미성 판단
     function isSignificant(lower, upper) {
@@ -649,7 +674,7 @@ function createForestPlot(containerId, data, title) {
             tickvals: (() => {
                 const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
                 const maxVal = Math.min(1.1, Math.max(...adjustedCiUppers));
-                if (maxVal - minVal < 0.04) { // 범위가 0.04보다 작을 경우
+                if (maxVal - minVal < 0.04) {
                     return [0.98, 0.99, 1.00, 1.01, 1.02];
                 }
                 const step = (maxVal - minVal) / 4;
@@ -693,8 +718,8 @@ function createForestPlot(containerId, data, title) {
         ],
         annotations: [
             ...groupLabels.map(g => ({
-                x: -0.05, // 화면 좌측 기준으로 설정
-                xref: 'paper', // 그래프 데이터 범위가 아닌 화면 기준
+                x: -0.05,
+                xref: 'paper',
                 y: g.y - 0.5,
                 text: g.name,
                 xanchor: 'right',
@@ -703,7 +728,7 @@ function createForestPlot(containerId, data, title) {
                 font: { size: 14, weight: 'bold' }
             })),
             ...Object.entries(pValues).map(([groupName, pValue], idx) => ({
-                x: 1.05, // 화면 기준으로 우측에 고정
+                x: 1.05,
                 xref: 'paper',
                 y: groupLabels.find(g => g.name === groupName).y + 0.5,
                 text: pValue,
@@ -713,7 +738,7 @@ function createForestPlot(containerId, data, title) {
                 font: { size: 10 }
             }))
         ],
-        margin: { l: 200, r: 100, t: 80, b: 50 }, // 왼쪽 여백 확장
+        margin: { l: 200, r: 100, t: 80, b: 50 },
         height: Object.keys(groupDefinitions).length * 120,
         hovermode: 'closest',
         paper_bgcolor: '#f9f9f9',
@@ -856,16 +881,16 @@ function renderForestPlot(department, disease, exposure, condition) {
     const availableSubgroups = [...new Set(filteredData.map(row => row["subgroup"]))];
 
     groupDefinitions = {};
-    for (const group in groupMapping) {
-        const matchingSubgroups = groupMapping[group].filter(subgroup => availableSubgroups.includes(subgroup));
+    for (const group in groupMappingTb3) {
+        const matchingSubgroups = groupMappingTb3[group].filter(subgroup => availableSubgroups.includes(subgroup));
         if (matchingSubgroups.length > 0) {
             groupDefinitions[group] = matchingSubgroups;
         }
     }
     console.log("renderForestPlot - groupDefinitions:", groupDefinitions);
     const subgroupToGroup = {};
-    for (const group in groupMapping) {
-        groupMapping[group].forEach(subgroup => {
+    for (const group in groupMappingTb3) {
+        groupMappingTb3[group].forEach(subgroup => {
             subgroupToGroup[subgroup] = group;
         });
     }
@@ -903,7 +928,7 @@ function renderForestPlot(department, disease, exposure, condition) {
                     ciUppers.push(1.0);
                 }
             });
-            const groupRows = airData.filter(row => groupMapping[group].includes(row["subgroup"]) && row["p-value"]);
+            const groupRows = airData.filter(row => groupMappingTb3[group].includes(row["subgroup"]) && row["p-value"]);
             pValues[group] = groupRows.length > 0 ? groupRows[0]["p-value"] : "";
         }
 
@@ -1517,6 +1542,194 @@ const nameMapping = {
     "ich1": "뇌졸중 중 허혈성 뇌졸중",
     "hrr0": "뇌졸중 중 출혈성 뇌졸중 아님",
     "hrr1": "뇌족중 중 출혈성 뇌졸중"
+};
+
+
+// tb3 전용 groupMapping과 nameMapping (stats.xlsx 기반)
+const groupMappingTb3 = {
+    "연령": ["under 65", "age641", "age650", "over 65", "age651"],
+    "성별": ["male", "sex_type0", "sex1", "female", "sex_type1", "sex2"],
+    "의료수급 여부": ["normal", "medicaid0", "medicaid", "medicaid1"],
+    "흡연력": ["smk_never", "smk11", "smk_ever", "smk12", "smk_unknown", "smk19"],
+    "체질량지수": ["bmi_under25", "BMI_CAT1", "bmi_cat11", "bmi_over25", "BMI_CAT2", "bmi_cat12", "bmi_unknown", "BMI_CAT9", "bmi_cat19"],
+    "고혈압": ["hyper0", "h_hyper0", "hyper1", "h_hyper1"],
+    "당뇨": ["dm0", "dm1"],
+    "이상지질혈증": ["dyslip0", "dyslip1"],
+    "심혈관질환": ["icode0", "icode1"],
+    "뇌혈관질환": ["cereb0", "cereb1"],
+    "심부전": ["hfail0", "CHF0", "h_CHF0", "HF0", "hfail1", "CHF1", "h_CHF1", "HF1"],
+    "허혈성 심장질환": ["ische0", "ische1"],
+    "심근경색": ["MI0", "h_mi0", "MI1", "h_mi1"],
+    "말초혈관질환": ["periph0", "periph1"],
+    "심방세동": ["ventfib0", "ventfib1"],
+    "협심증": ["angina0", "h_angina0", "angina1", "h_angina1"],
+    "찰슨동반질환점수": ["cci<2", "g_index0", "cci>=2", "g_index1"],
+    "위식도역류질환": ["gerd0", "h_gerd0", "gerd1", "h_gerd1"],
+    "에이즈": ["HIV0", "HIV1"],
+    "결핵": ["previous TB0", "previous TB1"],
+    "천식": ["asthma0", "asthma1"],
+    "만성폐쇄성폐질환": ["copd0", "h_copd0", "copd1", "h_copd1"],
+    "폐렴": ["pneumo0", "pneumo1"],
+    "기관지확장증": ["BE0", "BE1"],
+    "정신질환": ["fcode0", "fcode10", "fcode1", "fcode11"],
+    "뇌졸중": ["h_stroke0", "h_stroke1"],
+    "허혈성 뇌졸중": ["h_ich0", "h_ich1"],
+    "출혈성 뇌졸중": ["h_hrr0", "h_hrr1"],
+    "건선관절염": ["psa0", "psa1"],
+    "알레르기성 질환": ["ALLERGY0", "h_allergy0", "ALLERGY1", "h_allergy1"],
+    "자가면역질환": ["autoimm0", "h_autoimm0", "autoimm1", "h_autoimm1"],
+    "암": ["cancer0", "h_cancer0", "cancer1", "h_cancer1"],
+    "만성콩팥병": ["chr_kid0", "chr_kid1"],
+    "갑상샘항진증": ["hyper_thy0", "hyper_thy1"],
+    "간질성폐질환": ["ILD0", "ILD1"],
+    "간질환": ["liver0", "liver1"],
+    "비호지킨림프종": ["nhodg0", "nhodg1"],
+    "신세관산증": ["renal_tub0", "renal_tub1"],
+    "아토피성 피부염": ["atopi0", "atopi1"],
+    "알츠하이머병": ["Altzh0", "Altzh1"],
+    "항응고제": ["Anticoagulant0", "Anticoagulant1"],
+    "항혈소판제": ["Antiplatelet0", "Antiplatelet1"],
+    "갑상샘저하증": ["hypo_thy0", "hypo_thy1"],
+    "장기이식": ["trans0", "h_trans0", "trans1", "h_trans1"]
+};
+
+const nameMappingTb3 = {
+    "under 65": "65세 미만",
+    "age641": "65세 미만",
+    "age650": "65세 미만",
+    "over 65": "65세 이상",
+    "age651": "65세 이상",
+    "male": "남성",
+    "sex_type0": "남성",
+    "sex1": "남성",
+    "female": "여성",
+    "sex_type1": "여성",
+    "sex2": "여성",
+    "normal": "의료수급자 아님",
+    "medicaid0": "의료수급자 아님",
+    "medicaid": "의료수급자",
+    "medicaid1": "의료수급자",
+    "smk_never": "흡연력 비해당",
+    "smk11": "흡연력 비해당",
+    "smk_ever": "흡연력 해당",
+    "smk12": "흡연력 해당",
+    "smk_unknown": "흡연력 알 수 없음",
+    "smk19": "흡연력 알 수 없음",
+    "bmi_under25": "체질량지수 정상 이하",
+    "BMI_CAT1": "체질량지수 정상 이하",
+    "bmi_cat11": "체질량지수 정상 이하",
+    "bmi_over25": "체질량지수 과체중 이상",
+    "BMI_CAT2": "체질량지수 과체중 이상",
+    "bmi_cat12": "체질량지수 과체중 이상",
+    "bmi_unknown": "체질량지수 알 수 없음",
+    "BMI_CAT9": "체질량지수 알 수 없음",
+    "bmi_cat19": "체질량지수 알 수 없음",
+    "hyper0": "질환 발생일로부터 1년 이내 고혈압 발생 안함",
+    "h_hyper0": "질환 발생일로부터 1년 이내 고혈압 발생 안함",
+    "hyper1": "질환 발생일로부터 1년 이내 고혈압 발생",
+    "h_hyper1": "질환 발생일로부터 1년 이내 고혈압 발생",
+    "dm0": "질환 발생일로부터 1년 이내 당뇨 발생 안함",
+    "dm1": "질환 발생일로부터 1년 이내 당뇨 발생",
+    "dyslip0": "질환 발생일로부터 1년 이내 이상지질혈증 발생 안함",
+    "dyslip1": "질환 발생일로부터 1년 이내 이상지질혈증 발생",
+    "icode0": "질환 발생일로부터 1년 이내 심혈관질환 발생 안함",
+    "icode1": "질환 발생일로부터 1년 이내 심혈관질환 발생",
+    "cereb0": "질환 발생일로부터 1년 이내 뇌혈관질환 발생 안함",
+    "cereb1": "질환 발생일로부터 1년 이내 뇌혈관질환 발생",
+    "hfail0": "질환 발생일로부터 1년 이내 심부전 발생 안함",
+    "CHF0": "질환 발생일로부터 1년 이내 심부전 발생 안함",
+    "h_CHF0": "질환 발생일로부터 1년 이내 심부전 발생 안함",
+    "HF0": "질환 발생일로부터 1년 이내 심부전 발생 안함",
+    "hfail1": "질환 발생일로부터 1년 이내 심부전 발생",
+    "CHF1": "질환 발생일로부터 1년 이내 심부전 발생",
+    "h_CHF1": "질환 발생일로부터 1년 이내 심부전 발생",
+    "HF1": "질환 발생일로부터 1년 이내 심부전 발생",
+    "ische0": "질환 발생일로부터 1년 이내 허혈성 심장질환 발생 안함",
+    "ische1": "질환 발생일로부터 1년 이내 허혈성 심장질환 발생",
+    "MI0": "질환 발생일로부터 1년 이내 심근경색 발생 안함",
+    "h_mi0": "질환 발생일로부터 1년 이내 심근경색 발생 안함",
+    "MI1": "질환 발생일로부터 1년 이내 심근경색 발생",
+    "h_mi1": "질환 발생일로부터 1년 이내 심근경색 발생",
+    "periph0": "질환 발생일로부터 1년 이내 말초혈관질환 발생 안함",
+    "periph1": "질환 발생일로부터 1년 이내 말초혈관질환 발생",
+    "ventfib0": "질환 발생일로부터 1년 이내 심방세동 발생 안함",
+    "ventfib1": "질환 발생일로부터 1년 이내 심방세동 발생",
+    "angina0": "질환 발생일로부터 1년 이내 협심증 발생 안함",
+    "h_angina0": "질환 발생일로부터 1년 이내 협심증 발생 안함",
+    "angina1": "질환 발생일로부터 1년 이내 협심증 발생",
+    "h_angina1": "질환 발생일로부터 1년 이내 협심증 발생",
+    "cci<2": "찰슨동반질환점수 2점 미만",
+    "g_index0": "찰슨동반질환점수 2점 미만",
+    "cci>=2": "찰슨동반질환점수 2점 이상",
+    "g_index1": "찰슨동반질환점수 2점 이상",
+    "gerd0": "질환 발생일로부터 1년 이내 위식도역류질환 발생 안함",
+    "h_gerd0": "질환 발생일로부터 1년 이내 위식도역류질환 발생 안함",
+    "gerd1": "질환 발생일로부터 1년 이내 위식도역류질환 발생",
+    "h_gerd1": "질환 발생일로부터 1년 이내 위식도역류질환 발생",
+    "HIV0": "질환 발생일로부터 1년 이내 에이즈 발생 안함",
+    "HIV1": "질환 발생일로부터 1년 이내 에이즈 발생",
+    "previous TB0": "질환 발생일 이전 결핵 발생 안함",
+    "previous TB1": "질환 발생일 이전 결핵 발생",
+    "asthma0": "질환 발생일로부터 1년 이내 천식 발생 안함",
+    "asthma1": "질환 발생일로부터 1년 이내 천식 발생",
+    "copd0": "질환 발생일로부터 1년 이내 만성폐쇄성폐질환 발생 안함",
+    "h_copd0": "질환 발생일로부터 1년 이내 만성폐쇄성폐질환 발생 안함",
+    "copd1": "질환 발생일로부터 1년 이내 만성폐쇄성폐질환 발생",
+    "h_copd1": "질환 발생일로부터 1년 이내 만성폐쇄성폐질환 발생",
+    "pneumo0": "질환 발생일로부터 5년 이내 폐렴 발생 안함",
+    "pneumo1": "질환 발생일로부터 5년 이내 폐렴 발생",
+    "BE0": "질환 발생일로부터 1년 이내 기관지확장증 발생 안함",
+    "BE1": "질환 발생일로부터 1년 이내 기관지확장증 발생",
+    "fcode0": "질환 발생일로부터 1년 이내 정신질환 발생 안함",
+    "fcode10": "질환 발생일로부터 1년 이내 정신질환 발생 안함",
+    "fcode1": "질환 발생일로부터 1년 이내 정신질환 발생",
+    "fcode11": "질환 발생일로부터 1년 이내 정신질환 발생",
+    "h_stroke0": "질환 발생일로부터 1년 이내 뇌졸중 발생 안함",
+    "h_stroke1": "질환 발생일로부터 1년 이내 뇌졸중 발생",
+    "h_ich0": "질환 발생일로부터 1년 이내 허혈성 뇌졸중 발생 안함",
+    "h_ich1": "질환 발생일로부터 1년 이내 허혈성 뇌졸중 발생",
+    "h_hrr0": "질환 발생일로부터 1년 이내 출혈성 뇌졸중 발생 안함",
+    "h_hrr1": "질환 발생일로부터 1년 이내 출혈성 뇌졸중 발생",
+    "psa0": "질환 발생일로부터 1년 이내 건선관절염 발생 안함",
+    "psa1": "질환 발생일로부터 1년 이내 건선관절염 발생",
+    "ALLERGY0": "질환 발생일로부터 1년 이내 알레르기성 질환 발생 안함",
+    "h_allergy0": "질환 발생일로부터 1년 이내 알레르기성 질환 발생 안함",
+    "ALLERGY1": "질환 발생일로부터 1년 이내 알레르기성 질환 발생",
+    "h_allergy1": "질환 발생일로부터 1년 이내 알레르기성 질환 발생",
+    "autoimm0": "질환 발생일로부터 1년 이내 자가면역질환 발생 안함",
+    "h_autoimm0": "질환 발생일로부터 1년 이내 자가면역질환 발생 안함",
+    "autoimm1": "질환 발생일로부터 1년 이내 자가면역질환 발생",
+    "h_autoimm1": "질환 발생일로부터 1년 이내 자가면역질환 발생",
+    "cancer0": "질환 발생일로부터 1년 이내 암 발생 안함",
+    "h_cancer0": "질환 발생일로부터 1년 이내 암 발생 안함",
+    "cancer1": "질환 발생일로부터 1년 이내 암 발생",
+    "h_cancer1": "질환 발생일로부터 1년 이내 암 발생",
+    "chr_kid0": "질환 발생일로부터 1년 이내 만성콩팥병 발생 안함",
+    "chr_kid1": "질환 발생일로부터 1년 이내 만성콩팥병 발생",
+    "hyper_thy0": "질환 발생일로부터 1년 이내 갑상샘항진증 발생 안함",
+    "hyper_thy1": "질환 발생일로부터 1년 이내 갑상샘항진증 발생",
+    "ILD0": "질환 발생일로부터 1년 이내 간질성폐질환 발생 안함",
+    "ILD1": "질환 발생일로부터 1년 이내 간질성폐질환 발생",
+    "liver0": "질환 발생일로부터 1년 이내 간질환 발생 안함",
+    "liver1": "질환 발생일로부터 1년 이내 간질환 발생",
+    "nhodg0": "질환 발생일로부터 1년 이내 비호지킨림프종 발생 안함",
+    "nhodg1": "질환 발생일로부터 1년 이내 비호지킨림프종 발생",
+    "renal_tub0": "질환 발생일로부터 1년 이내 신세관산증 발생 안함",
+    "renal_tub1": "질환 발생일로부터 1년 이내 신세관산증 발생",
+    "atopi0": "질환 발생일로부터 1년 이내 아토피성 피부염 발생 안함",
+    "atopi1": "질환 발생일로부터 1년 이내 아토피성 피부염 발생",
+    "Anticoagulant0": "항응고제 사용 없음",
+    "Anticoagulant1": "항응고제 사용 있음",
+    "Altzh0": "질환 발생일로부터 1년 이내 알츠하이머병 발생 안함",
+    "Altzh1": "질환 발생일로부터 1년 이내 알츠하이머병 발생",
+    "Antiplatelet0": "항혈소판제 사용 없음",
+    "Antiplatelet1": "항혈소판제 사용 있음",
+    "hypo_thy0": "질환 발생일로부터 1년 이내 갑상샘저하증 발생 안함",
+    "hypo_thy1": "질환 발생일로부터 1년 이내 갑상샘저하증 발생",
+    "trans0": "질환 발생일 이전 장기이식 과거력 없음",
+    "h_trans0": "질환 발생일 이전 장기이식 과거력 없음",
+    "trans1": "질환 발생일 이전 장기이식 과거력 있음",
+    "h_trans1": "질환 발생일 이전 장기이식 과거력 있음"
 };
 
 function updateFilterTitle(view) {

@@ -60,6 +60,7 @@ body {
 .footer-logo {
     height: 60px;
     width: auto;
+    background: white;
 }
 @media (max-width: 768px) {
     .header h1 {
@@ -80,10 +81,14 @@ body {
     background-color: #f0f0f0;
     border-bottom: 1px solid #ccc;
     text-align: center;
+    margin-top: -80px; /* 헤더와 겹치지 않도록 조정 */
+    margin-bottom: 10px; /* 필터 바와 컨텐츠 간격 조정 */
+    height: 50px;
 }
 .filter-bar select, .filter-bar button {
     padding: 5px;
     margin: 0 5px;
+    margin-top: 10px;
     border-radius: 4px;
     border: 1px solid #ccc;
 }
@@ -103,7 +108,8 @@ body {
 /* 토글 버튼 */
 .toggle-buttons {
     float: right;
-    margin-top: -40px; /* 필터 바와 같은 높이로 조정 */
+    margin-top: -60px; /* 필터 바와 같은 높이로 조정 */
+    margin-right: 10px;
     display: flex;
     gap: 10px;
 }
@@ -177,9 +183,10 @@ body {
 }
 .map-label, .graph-label {
     margin-top: 10px;
-    font-size: 14px;
+    font-size: 1.2rem;
     color: #666;
 }
+
 .graph-section {
     background-color: #f9f9f9;
     border-radius: 8px;
@@ -201,8 +208,14 @@ body {
     pointer-events: none;
     display: none;
 }
-.graph-section img, .pyramid img, .map img {
+.graph-section img, .map img {
     width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.pyramid img{
+    width: 80%;
     height: auto;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -358,6 +371,7 @@ body {
     width: 100%;
     gap: 2rem;
 }
+/* overview-pyramid과 overview-map 스타일 */
 .overview-pyramid, .overview-map {
     flex: 1;
     text-align: center;
@@ -368,30 +382,61 @@ body {
     height: 55vh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    align-items: center; /* 중앙 정렬 */
+    justify-content: center; /* 수직 중앙 배치 */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* 컨텐츠 오버플로우 방지 */
 }
+
+/* 이미지 스타일 */
 .overview-pyramid img, .overview-map img {
     width: 100%;
-    height: 100%;
+    max-height: 90%; /* div 높이의 80%로 제한 */
     object-fit: contain;
     border-radius: 8px;
 }
+
+/* map-label 스타일 */
+.map-label {
+    font-size: 1.2rem; /* 동적 크기 */
+    color: #000;
+    line-height: 1.2;
+    max-width: 100%; /* div 너비 초과 방지 */
+    white-space: normal; /* 줄 바꿈 허용 */
+    text-overflow: clip; /* 텍스트 오버플로우 시 잘림 */
+    padding: 0.5rem 0; /* 상하 여백 */
+}
+
+/* 반응형 디자인 */
 @media (max-width: 768px) {
     .overview-pyramid, .overview-map {
         width: 100%;
         height: 40vh;
+        padding: 0.5rem;
+    }
+
+    .overview-pyramid img, .overview-map img {
+        max-height: 75%; /* 작은 화면에서 이미지 크기 축소 */
+    }
+
+    .map-label {
+        font-size: 0.9rem; /* 글자 크기 축소 */
+        padding: 0.3rem 0;
     }
 }
-.map-label, .graph-label {
-    margin-top: 0.5rem;
-    font-size: 20px;
-    color: #000;
-}
-@media (max-width: 768px) {
-    .content-sections {
-        flex-direction: column;
-        gap: 1.5rem;
+
+@media (max-width: 480px) {
+    .overview-pyramid, .overview-map {
+        height: 35vh; /* 매우 작은 화면에서 높이 조정 */
+    }
+
+    .overview-pyramid img, .overview-map img {
+        max-height: 70%;
+    }
+
+    .map-label {
+        font-size: 0.7rem;
+        line-height: 1.1;
     }
 }
 .new-section {
