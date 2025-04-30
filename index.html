@@ -10,6 +10,93 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="favicon.ico">
 </head>
+<style>
+    .content {
+        max-width: 900px;
+        margin: 0 auto;
+        line-height: 1.6;
+        padding: 30px;
+    }
+
+    .content h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #000000;
+    }
+
+    .content h2 {
+        font-size: 1.5rem;
+        font-weight: 500;
+        margin: 2rem 0 1rem;
+        color: #000000;
+    }
+
+    .content p {
+        font-size: 1rem;
+        margin-bottom: 1.2rem;
+        color: #333;
+    }
+
+    .content ul, .content ol {
+        margin: 1rem 0;
+        padding-left: 2rem;
+    }
+
+    .content ul li, .content ol li {
+        margin-bottom: 0.8rem;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .content ol li {
+        margin-left: 0.5rem;
+    }
+
+    .content .section-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin: 1.5rem 0 0.5rem;
+        color: #1a3c5e;
+    }
+
+
+    @media (max-width: 768px) {
+        .content {
+            padding: 15px;
+        }
+
+        .content h1 {
+            font-size: 1.8rem;
+        }
+
+        .content h2 {
+            font-size: 1.3rem;
+        }
+
+        .content p, .content ul li, .content ol li {
+            font-size: 0.9rem;
+        }
+
+        .content .section-title {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .content h1 {
+            font-size: 1.5rem;
+        }
+
+        .content h2 {
+            font-size: 1.2rem;
+        }
+
+        .content p, .content ul li, .content ol li {
+            font-size: 0.85rem;
+        }
+    }
+</style>
 <body>
     <div class="header">
         <h1>미세먼지 단기노출 건강영향보고서</h1>
@@ -23,16 +110,24 @@
     </div>
 
     <div class="content">
-        <h2>AIR Dashboard</h2>
+        <h2>미세먼지, 보이지 않는 위험에 대한 과학적 접근</h2>
         <p>
-            AIR의 연구보고서입니다.
+            최근 수년간 미세먼지(PM10, PM2.5)는 우리 국민의 건강에 심각한 영향을 미치는 주요 환경위험요인으로 주목받아 왔습니다. 미세먼지는 인체 전신에 걸쳐 다양한 건강 문제를 유발하거나 악화시킬 수 있으나, 지금까지는 주로 호흡기 질환, 심혈관질환, 알레르기성 질환 등 일부 환경성 질환을 중심으로 연구되어 왔습니다.
         </p>
         <p>
-            <strong>Grant Information:</strong> 국립보건원 등 Grant를 표시합니다.
+            이러한 한계를 극복하고자, 본 연구는 국립보건연구원 연구과제로 수행되었으며, 미세먼지가 인체 건강 전반에 미치는 영향을 다양한 질환군을 대상으로 체계적으로 평가하는 것을 목표로 추진되었습니다. 기존의 국한된 질환 평가를 넘어,
+        </p>
+        <ol>•	호흡기, 순환기, 내분비, 소화기, 정신건강, 여성건강, 비뇨기, 신장, 면역, 이비인후, 신경계, 피부, 안과, 암 등 총 14개 임상 영역을 포괄하여, 미세먼지의 전신적 건강영향을 종합적으로 분석하였습니다.</ol>
+        <p>
+            연구팀은 대규모 건강보험 청구자료와 대기질 자료를 연계하고, 최신 환경 역학 연구 방법론을 적용하여, 미세먼지 노출과 질환별 건강위험도 간의 관계를 정량적으로 산출하였습니다.
         </p>
         <p>
-            분석데이터 소개는 <a href="overview.html">이곳</a>에서 확인하실 수 있으며, 세부질환결과는 <a href="details.html">이곳</a>에서 확인하실 수 있습니다.
+            본 인터랙티브 보고서는 이러한 분석 결과를 바탕으로 제작되었으며, 미세먼지 농도 증가가 건강에 미치는 구체적 영향을 확인하고 질환별 민감성과 건강부담을 이해할 수 있도록 지원합니다.
         </p>
+        <p>
+            이를 통해 보이지 않는 공기 중 위험요인인 미세먼지가 우리의 건강에 미치는 광범위한 영향을 직관적으로 이해할 수 있으며, 향후 정책 수립과 개인 건강관리 전략 마련에 기여할 수 있기를 기대합니다.
+        </p>
+        <h2>여러분의 건강을 지키는 첫걸음, 과학적 이해에서 시작됩니다.</h2>
     </div>
 
     <div class="footer">
