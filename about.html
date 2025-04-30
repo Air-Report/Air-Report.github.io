@@ -9,6 +9,101 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="favicon.ico">
+    <style>
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+            padding: 30px;
+        }
+
+        .about-content h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1a3c5e;
+        }
+
+        .about-content h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin: 2rem 0 1rem;
+            color: #2a4d7a;
+        }
+
+        .about-content p {
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+            color: #333;
+        }
+
+        .about-content ul, .about-content ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        .about-content ul li, .about-content ol li {
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .about-content ol li {
+            margin-left: 0.5rem;
+        }
+
+        .about-content .section-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.5rem;
+            color: #1a3c5e;
+        }
+
+        .about-content a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .about-content a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .about-content {
+                padding: 15px;
+            }
+
+            .about-content h1 {
+                font-size: 1.8rem;
+            }
+
+            .about-content h2 {
+                font-size: 1.3rem;
+            }
+
+            .about-content p, .about-content ul li, .about-content ol li {
+                font-size: 0.9rem;
+            }
+
+            .about-content .section-title {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .about-content h1 {
+                font-size: 1.5rem;
+            }
+
+            .about-content h2 {
+                font-size: 1.2rem;
+            }
+
+            .about-content p, .about-content ul li, .about-content ol li {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -22,18 +117,43 @@
         <a href="about.html">보고서활용방식</a>
     </div>
 
-    <div class="content">
-        <h2>About AIR Dashboard</h2>
-        <p>
-            The AIR Dashboard is a project aimed at providing accessible and insightful visualizations 
-            of population and health data. Our mission is to empower researchers, policymakers, and 
-            the public with tools to understand health trends and demographics effectively.
-        </p>
-        <p>
-            This project was developed by a team of data scientists and health experts, supported by 
-            [Organization Name]. We strive to deliver accurate and up-to-date information to support 
-            data-driven decision-making.
-        </p>
+    <div class="content about-content">
+        <h1>보고서 활용 안내</h1>
+        <p>본 보고서는 미세먼지(PM2.5, PM10)의 단기 노출이 건강에 미치는 영향을 분석한 자료입니다. 본 안내서는 <strong>분석 데이터 소개</strong> 페이지와 <strong>세부 질환 결과</strong> 페이지의 활용 방법을 중심으로, 보고서의 사용 방법을 설명합니다.</p>
+
+        <h2>분석 데이터 소개 페이지 활용</h2>
+        <p>분석 데이터 소개 페이지는 2006년 국민건강보험공단 자료를 기반으로 한 두 개의 코호트(전국민 대표 코호트 7,461,009명, 30세 이상 코호트 10,005,312명)의 인구사회학적 특성을 시각화한 섹션입니다.</p>
+        <ul>
+            <li><strong>인구 피라미드</strong>: 연령 및 성별 분포를 시각적으로 확인하여 코호트의 인구 구조를 파악할 수 있습니다.</li>
+            <li><strong>지역별 분포 지도</strong>: 전국 단위의 지역별 대상자 수(N)를 지도 형태로 제공하여 지리적 분포를 분석할 수 있습니다.</li>
+            <li><strong>필터링 기능</strong>: 하단 필터 바를 통해 분과(예: 순환기, 호흡기), 질환(예: 심근경색, 천식), 상태(발생/악화)를 선택하여 특정 데이터로 이동합니다.</li>
+        </ul>
+        <p class="section-title"><strong>활용 방법</strong>:</p>
+        <ol>
+            <li>페이지를 방문하여 두 코호트의 인구 피라미드와 지역별 분포를 검토합니다.</li>
+            <li>필터 바에서 관심 있는 분과 및 질환을 선택하여 세부 질환 결과 페이지로 이동합니다.</li>
+            <li>시각화된 데이터를 바탕으로 지역별 또는 연령별 미세먼지 노출 위험을 초기 평가합니다.</li>
+        </ol>
+
+        <h2>세부 질환 결과 페이지 활용</h2>
+        <p>세부 질환 결과 페이지는 미세먼지 단기 노출과 특정 질환 간의 연관성을 상세히 분석하는 핵심 섹션입니다. 통계 데이터와 하위 그룹 분석 결과를 제공하며, 다음 기능을 포함합니다:</p>
+        <ul>
+            <li><strong>필터링 시스템</strong>: 분과(예: 순환기, 호흡기), 질환(예: 심근경색, 천식), 상태(발생/악화)를 선택하여 원하는 데이터로 필터링합니다. 노출 기간은 기본적으로 단기로 설정됩니다.</li>
+            <li><strong>통계 분석 탭</strong>: 연령, 성별, 흡연 여부, 수익 수준 등 인구사회학적 특성과 발생률을 표시합니다.</li>
+            <li><strong>하위 그룹 분석 탭</strong>: PM2.5 및 PM10 노출에 따른 위험도를 포레스트 플롯으로 시각화하며, 오즈비(Odds Ratio), 신뢰구간(Confidence Interval), p-value를 제공합니다.</li>
+        </ul>
+        <p class="section-title"><strong>활용 방법</strong>:</p>
+        <ol>
+            <li>페이지 상단의 필터 바에서 분석하고자 하는 분과, 질환, 상태를 선택하고 "필터 적용" 버튼을 클릭합니다.</li>
+            <li>"통계분석결과" 탭에서 대상 코호트의 인구사회학적 특성과 발생률을 검토합니다. 예: 30세 이상 코호트의 심근경색 발생률 확인.</li>
+            <li>"하위그룹분석결과" 탭으로 전환하여 포레스트 플롯을 분석합니다. 오즈비와 p-value(≤ 0.05는 통계적 유의미성)를 통해 미세먼지 노출의 영향을 평가합니다.</li>
+        </ol>
+
+        <h2>문의</h2>
+        <p>보고서 사용 관련 문의 또는 피드백은 아래 연락처로 제출해 주시기 바랍니다:</p>
+        <ul>
+            <li><strong>이메일</strong>: support@air-report</li>
+        </ul>
     </div>
 
     <div class="footer">
