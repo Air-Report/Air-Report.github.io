@@ -1,20 +1,20 @@
 function loadCSVData(callback) {
     const files = {
         tb2: [
-            { path: '/Air-Report/data/short_occur_tb2.csv', exposure: '단기', condition: '발생' },
-            { path: '/Air-Report/data/short_worse_tb2.csv', exposure: '단기', condition: '악화' }
+            { path: '/data/short_occur_tb2.csv', exposure: '단기', condition: '발생' },
+            { path: '/data/short_worse_tb2.csv', exposure: '단기', condition: '악화' }
         ],
         tb3: [
-            { path: '/Air-Report/data/short_occur_tb3.csv', exposure: '단기', condition: '발생' },
-            { path: '/Air-Report/data/short_worse_tb3.csv', exposure: '단기', condition: '악화' }
+            { path: '/data/short_occur_tb3.csv', exposure: '단기', condition: '발생' },
+            { path: '/data/short_worse_tb3.csv', exposure: '단기', condition: '악화' }
         ],
         tb4: [
-            { path: '/Air-Report/data/short_occur_tb4.csv', exposure: '단기', condition: '발생' },
-            { path: '/Air-Report/data/short_worse_tb4.csv', exposure: '단기', condition: '악화' }
+            { path: '/data/short_occur_tb4.csv', exposure: '단기', condition: '발생' },
+            { path: '/data/short_worse_tb4.csv', exposure: '단기', condition: '악화' }
         ],
         stats: [
-            { path: '/Air-Report/data/data_short_worse.csv', exposure: '단기', condition: '악화' },
-            { path: '/Air-Report/data/data_short_occur.csv', exposure: '단기', condition: '발생' }
+            { path: '/data/data_short_worse.csv', exposure: '단기', condition: '악화' },
+            { path: '/data/data_short_occur.csv', exposure: '단기', condition: '발생' }
         ]
     };
 

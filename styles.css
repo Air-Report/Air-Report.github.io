@@ -613,6 +613,61 @@ body {
 /* overview.html 스타일 */
 
 
+/* details.html 스타일 */
+/* details.html 콘텐츠 섹션 CSS */
+.details-content.content-sections {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px; /* 섹션 간 간격 */
+}
+.left-column {
+    display: flex;
+    flex-direction: column;
+    width: 35%;
+    gap: 10px;
+}
+.right-column {
+    width: 60%;
+}
+
+/* 태블릿 (770px~1024px) */
+@media (max-width: 1024px) {
+    .details-content.content-sections {
+        gap: 15px;
+    }
+    .left-column {
+        width: 40%;
+    }
+    .right-column {
+        width: 55%;
+    }
+}
+
+/* 모바일 (770px 이하) */
+@media (max-width: 770px) {
+    .details-content.content-sections {
+        flex-direction: column; /* 수직 배치 */
+        gap: 10px;
+    }
+    .left-column, .right-column {
+        width: 100%;
+    }
+}
+
+/* 소형 모바일 (480px 이하) */
+@media (max-width: 480px) {
+    .details-content.content-sections {
+        gap: 8px;
+    }
+    .left-column, .right-column {
+        gap: 8px;
+    }
+}
+
+/* details.html 스타일 */
+
+
 /* 기존 스타일 */
 .pyramid-section {
     background-color: #f9f9f9;
@@ -704,20 +759,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-.content-sections {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-}
-.left-column {
-    display: flex;
-    flex-direction: column;
-    width: 35%;
-    gap: 10px;
-}
-.right-column {
-    width: 60%;
-}
+
 .new-section {
     background-color: #f9f9f9;
     border-radius: 8px;
