@@ -290,7 +290,7 @@ function getStatsData(department, disease, exposure, condition) {
             { "name": "현재 흡연자", "percentage": getVariableData("smk3").percentage },
             { "name": "알 수 없음", "percentage": getVariableData("smk9").percentage }
         ],
-        "bmi": [
+        "체질량지수": [
             { "name": "저체중", "percentage": getVariableData("bmi_cat1").percentage },
             { "name": "정상", "percentage": getVariableData("bmi_cat2").percentage },
             { "name": "과체중", "percentage": getVariableData("bmi_cat3").percentage },
@@ -466,7 +466,7 @@ function getStatsData(department, disease, exposure, condition) {
     const groupIcons = {
         "수익수준": { icon: "fas fa-coins", color: "#2ecc71" },
         "흡연여부": { icon: "fas fa-smoking", color: "#e74c3c" },
-        "bmi": { icon: "fas fa-weight", color: "#f39c12" },
+        "체질량지수": { icon: "fas fa-weight", color: "#f39c12" },
         "고혈압": { icon: "fas fa-heartbeat", color: "#9b59b6" },
         "당뇨병": { icon: "fas fa-syringe", color: "#9b59b6" },
         "고지혈증": { icon: "fas fa-tint", color: "#9b59b6" },
@@ -562,7 +562,7 @@ function calculateYPositionsTb3(groupDefs) {
     const groupLabels = [];
     const subgroupLabels = [];
     let currentY = 0;
-    const spacing = 2;
+    const spacing = 3;
     const groupSpacing = 3;
 
     for (const [groupName, subItems] of Object.entries(groupDefs)) {
@@ -700,7 +700,29 @@ function createForestPlot(containerId, data, title) {
         yaxis: {
             range: [yMax, yMin],
             tickvals: yPos,
-            ticktext: subgroupLabels.map(s => s.name),
+            ticktext: subgroupLabels.map(s => {
+                let name = s.name;
+                const maxLength = 20;
+                if (name.includes('이내')) {
+                    return name.replace('이내', '이내<br>');
+                }
+                if (name.length > maxLength) {
+                    const words = name.split(' ');
+                    let wrapped = '';
+                    let currentLine = '';
+                    words.forEach(word => {
+                        if ((currentLine + word).length > maxLength) {
+                            wrapped += (wrapped ? '<br>' : '') + currentLine;
+                            currentLine = word + ' ';
+                        } else {
+                            currentLine += word + ' ';
+                        }
+                    });
+                    wrapped += (wrapped ? '<br>' : '') + currentLine;
+                    return wrapped.trim();
+                }
+                return name;
+            }),
             showgrid: true,
             gridcolor: 'lightgray',
             gridwidth: 1,
@@ -718,22 +740,22 @@ function createForestPlot(containerId, data, title) {
         ],
         annotations: [
             ...groupLabels.map(g => ({
-                x: -0.05,
+                x: -0.15,
                 xref: 'paper',
-                y: g.y - 0.5,
+                y: g.y - 1,
                 text: g.name,
                 xanchor: 'right',
                 yanchor: 'bottom',
                 showarrow: false,
                 font: { size: 14, weight: 'bold' }
             })),
-            ...Object.entries(pValues).map(([groupName, pValue], idx) => ({
+            ...pValues.map((item, idx) => ({
                 x: 1.05,
                 xref: 'paper',
-                y: groupLabels.find(g => g.name === groupName).y + 0.5,
-                text: pValue,
+                y: yPos[idx],
+                text: item.pValue,
                 xanchor: 'left',
-                yanchor: 'bottom',
+                yanchor: 'middle',
                 showarrow: false,
                 font: { size: 10 }
             }))
@@ -915,23 +937,22 @@ function renderForestPlot(department, disease, exposure, condition) {
         const oddsRatios = [];
         const ciLowers = [];
         const ciUppers = [];
-        const pValues = {};
+        const pValues = [];
         for (const group in groupDefinitions) {
             groupDefinitions[group].forEach(subgroup => {
                 if (dataMap[subgroup]) {
                     oddsRatios.push(dataMap[subgroup].OddsRatioEst);
                     ciLowers.push(dataMap[subgroup].LowerCL);
                     ciUppers.push(dataMap[subgroup].UpperCL);
+                    pValues.push({ subgroup, pValue: dataMap[subgroup].pValue });
                 } else {
                     oddsRatios.push(1.0);
                     ciLowers.push(1.0);
                     ciUppers.push(1.0);
+                    pValues.push({ subgroup, pValue: "" });
                 }
             });
-            const groupRows = airData.filter(row => groupMappingTb3[group].includes(row["subgroup"]) && row["p-value"]);
-            pValues[group] = groupRows.length > 0 ? groupRows[0]["p-value"] : "";
         }
-
         orData.push({
             oddsRatios,
             ciLowers,
@@ -1391,7 +1412,7 @@ const groupMapping = {
     "성별": ["sex1", "sex2"], // 남성, 여성
     "수익수준": ["income1", "income2", "income3", "income9"], // < 30분위, 31 - 70 분위, >70 분위
     "흡연여부": ["smk1", "smk2", "smk3", "smk9"], // 비흡연자, 과거 흡연자, 현재 흡연자, 알 수 없음
-    "BMI 분류": ["bmi_cat1", "bmi_cat2", "bmi_cat3", "bmi_cat4", "bmi_cat9"], // 저체중, 정상체중, 과체중, 비만, 알 수 없음
+    "체질량지수 분류": ["bmi_cat1", "bmi_cat2", "bmi_cat3", "bmi_cat4", "bmi_cat9"], // 저체중, 정상체중, 과체중, 비만, 알 수 없음
     "이상지질혈증": ["dyslip0", "dyslip1"], // 1년 이내 이상지질혈증 발생 안함, 발생
     "I 코드 전체 질환": ["icode0", "icode1"], // 1년 이내 I 코드 전체 질환 발생 안함, 발생
     "동반질환 지수": ["CCI<2", "CCI >=2"], // 동반질환 지수 <2, ≥2
