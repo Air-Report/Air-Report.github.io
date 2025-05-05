@@ -740,11 +740,11 @@ function createForestPlot(containerId, data, title) {
         ],
         annotations: [
             ...groupLabels.map(g => ({
-                x: -0.15,
+                x: -0.35,
                 xref: 'paper',
-                y: g.y - 1,
+                y: g.y - 1.0,
                 text: g.name,
-                xanchor: 'right',
+                xanchor: 'left',
                 yanchor: 'bottom',
                 showarrow: false,
                 font: { size: 14, weight: 'bold' }
