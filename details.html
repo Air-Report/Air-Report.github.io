@@ -39,6 +39,11 @@
         <div class="filter-container">
             <h1>세부 질환 결과</h1>
             <div class="filter-bar">
+                <label for="condition">건강영향:</label>
+                <select id="condition">
+                    <option value="발생">발생</option>
+                    <option value="악화">악화</option>
+                </select>
                 <label for="department">분과:</label>
                 <select id="department">
                     <!-- 초기 상태는 단기 발생 기준 -->
@@ -64,11 +69,7 @@
                     <option value="말초혈관질환">말초혈관질환</option>
                     <option value="병원밖심정지">병원밖심정지</option>
                 </select>
-                <label for="condition">상태:</label>
-                <select id="condition">
-                    <option value="발생">발생</option>
-                    <option value="악화">악화</option>
-                </select>
+
                 <label for="exposure" style="display: none;">노출:</label>
                 <select id="exposure" style="display: none;">
                     <option value="단기">단기</option>

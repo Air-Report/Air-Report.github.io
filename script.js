@@ -55,10 +55,10 @@ function loadCSVData(callback) {
         window.csvDataTb4 = results.find(r => r.key === 'tb4').data;
         window.csvDataStats = results.find(r => r.key === 'stats').data;
 
-        // console.log("CSV 파싱 완료 - tb2:", window.csvDataTb2);
-        // console.log("CSV 파싱 완료 - tb3:", window.csvDataTb3);
-        // console.log("CSV 파싱 완료 - tb4:", window.csvDataTb4);
-        // console.log("CSV 파싱 완료 - stats:", window.csvDataStats);
+        // // console.log("CSV 파싱 완료 - tb2:", window.csvDataTb2);
+        // // console.log("CSV 파싱 완료 - tb3:", window.csvDataTb3);
+        // // console.log("CSV 파싱 완료 - tb4:", window.csvDataTb4);
+        // // console.log("CSV 파싱 완료 - stats:", window.csvDataStats);
 
         callback();
     })
@@ -125,7 +125,7 @@ if (window.location.pathname.includes('details.html')) {
 function updateDiseaseOptions(department, condition, exposure) {
     const diseaseSelect = document.getElementById('disease');
     if (!diseaseSelect) {
-        console.log("updateDiseaseOptions - diseaseSelect not available");
+        // console.log("updateDiseaseOptions - diseaseSelect not available");
         return;
     }
 
@@ -139,7 +139,7 @@ function updateDiseaseOptions(department, condition, exposure) {
         diseases = condition === "발생" ? (shortOccurMapping[department] || []) : (shortWorseMapping[department] || []);
     }
 
-    console.log("updateDiseaseOptions - department:", department, "condition:", condition, "exposure:", exposure, "diseases:", diseases);
+    // console.log("updateDiseaseOptions - department:", department, "condition:", condition, "exposure:", exposure, "diseases:", diseases);
 
     diseaseSelect.innerHTML = '';
     diseases.forEach(disease => {
@@ -153,7 +153,7 @@ function updateDiseaseOptions(department, condition, exposure) {
     const urlParams = new URLSearchParams(window.location.search);
     const disease = urlParams.get('disease') || diseases[0] || '';
     diseaseSelect.value = disease;
-    console.log("updateDiseaseOptions - selected disease:", diseaseSelect.value);
+    // console.log("updateDiseaseOptions - selected disease:", diseaseSelect.value);
 
     if (diseaseSelect.value) diseaseSelect.classList.add('selected');
 }
@@ -199,13 +199,13 @@ const departmentsForShortWorse = ["순환기", "호흡기", "정신질환", "신
 function setDepartmentOptions(condition, exposure) {
     const departmentSelect = document.getElementById('department');
     if (!departmentSelect) {
-        console.log("setDepartmentOptions - departmentSelect not available");
+        // console.log("setDepartmentOptions - departmentSelect not available");
         return;
     }
 
     const departments = (exposure === "단기" && condition === "발생") ? departmentsForShortOccur : departmentsForShortWorse;
 
-    console.log("setDepartmentOptions - condition:", condition, "exposure:", exposure, "departments:", departments);
+    // console.log("setDepartmentOptions - condition:", condition, "exposure:", exposure, "departments:", departments);
 
     departmentSelect.innerHTML = '';
     departments.forEach(dept => {
@@ -218,7 +218,7 @@ function setDepartmentOptions(condition, exposure) {
     const urlParams = new URLSearchParams(window.location.search);
     const department = urlParams.get('department') || departments[0];
     departmentSelect.value = department;
-    console.log("setDepartmentOptions - selected department:", departmentSelect.value);
+    // console.log("setDepartmentOptions - selected department:", departmentSelect.value);
 }
 
 
@@ -231,15 +231,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function updateCohortText(department, disease, exposure, condition) {
     const cohortText = document.getElementById('cohort-ver');
-    console.log("updateCohortText - cohortText:", cohortText);
-    console.log("pdateCohortText - department:", department, "disease:", disease, "exposure:", exposure, "condition:", condition);
-    if (['자해', '자폐스펙트럼', '주의력결핍장애', '편두통', '아토피성피부염'].includes(disease)) {
-        cohortText.innerHTML = '*전 연령 대상 코호트';
+    // console.log("updateCohortText - cohortText:", cohortText);
+    // console.log("pdateCohortText - department:", department, "disease:", disease, "exposure:", exposure, "condition:", condition);
+    if (['자폐스펙트럼', '주의력결핍장애', '아토피성피부염'].includes(disease)) {
+        cohortText.innerHTML = '*전 연령 대상 코호트 <br>(20세 미만)';
+    } else if (['자해', '편두통'].includes(disease)) {
+        cohortText.innerHTML = '*전 연령 대상 코호트 <br>(30세 미만)';
     } else {
         cohortText.innerHTML = '*30세 이상 연령 대상 코호트';
     }
 }
-
 
 function getStatsData(department, disease, exposure, condition) {
     if (!window.csvDataStats) {
@@ -247,7 +248,7 @@ function getStatsData(department, disease, exposure, condition) {
         return { statsData: {}, populationData: { total: "N/A", percentage: "N/A" } };
     }
 
-    console.log("입력값:", { department, disease, exposure, condition });
+    // console.log("입력값:", { department, disease, exposure, condition });
     const filteredData = window.csvDataStats.filter(row => {
         const match = row["분과"] === department && 
                       row["질환명"] === disease && 
@@ -255,7 +256,7 @@ function getStatsData(department, disease, exposure, condition) {
                       row["condition"] === condition;
         return match;
     });
-    console.log(`필터링된 데이터 (${department}, ${disease}, ${exposure}, ${condition}):`, filteredData);
+    // console.log(`필터링된 데이터 (${department}, ${disease}, ${exposure}, ${condition}):`, filteredData);
 
     function getVariableData(variable) {
         const row = filteredData.find(row => row["변수명"] === variable && row["변수종류"] === "범주형");
@@ -268,7 +269,48 @@ function getStatsData(department, disease, exposure, condition) {
     const totalRow = filteredData.find(row => row["변수명"] === "age" && row["변수종류"] === "연속형");
     const totalPopulation = totalRow ? totalRow["대상자수"] : "N/A";
     const totalNum = parseInt(totalPopulation.replace(/,/g, '')) || 0;
-    const percentage = ((totalNum / 10000000) * 100).toFixed(2);
+    const percentage = condition === '악화' ? (
+        {
+            '심근경색': 61.05,
+            '심방세동': 32.55,
+            '뇌혈관질환': 53.18,
+            '심부전': 39.57,
+            '허혈성심질환': 45.94,
+            '특발성폐섬유화증': 76.36,
+            '만성폐쇄성폐질환': 55.30,
+            '천식': 39.74,
+            '기관지확장증': 32.71,
+            '간질성폐질환': 16.70,
+            '우울증': 2.67,
+            '공황발작': 0.37,
+            '양극성장애': 5.21,
+            '조현병': 10.23,
+            '치매': 27.90,
+            '알츠하이머': 49.05,
+            '파킨슨': 15.01,
+            '건선': 2.07,
+            '쇼그렌증후군': 8.20,
+            '알레르기성비염': 36.81,
+            '말기신부전': 85.03,
+            '신장이식': 87.14,
+            '전체신장질환': 35.01,
+            '뇌졸중 전체': 52.66,
+            '비감염성 전방 포도막염': 15.59,
+            '비감염성 비전방 포도막염': 13.67,
+            '크론병': 39.31,
+            '궤양성 대장염': 51.60,
+            '2형당뇨병': 1.89,
+            '자폐스펙트럼': 3.32,
+            '주의력결핍장애': 0.76,
+            '편두통': 42.57,
+            '아토피성피부염': 2.64
+        }[disease] || ((totalNum / 10000000) * 100).toFixed(2)
+    ) : (
+        ['자폐스펙트럼', '주의력결핍장애', '아토피성피부염', '자해', '편두통'].includes(disease) ?
+        ((totalNum / 7400000) * 100).toFixed(2) :
+        ((totalNum / 10000000) * 100).toFixed(2)
+    );
+
     const statsData = {
         "연령": [
             { "name": "65세 미만", "percentage": getVariableData("age650").percentage, "icon": "fas fa-user", "color": "#333" },
@@ -552,9 +594,9 @@ function calculateYPositions(groupDefs) {
         groupLabels.push({ name: groupName, y: firstYInGroup - 0.5 });
         currentY += groupSpacing;
     }
-    console.log("Y Positions:", yPos);
-    console.log("Group Labels:", groupLabels);
-    console.log("Subgroup Labels:", subgroupLabels);
+    // console.log("Y Positions:", yPos);
+    // console.log("Group Labels:", groupLabels);
+    // console.log("Subgroup Labels:", subgroupLabels);
     return { yPos, groupLabels, subgroupLabels };
 }
 
@@ -577,9 +619,9 @@ function calculateYPositionsTb3(groupDefs) {
         currentY += groupSpacing;
     }
 
-    console.log("calculateYPositionsTb3 - yPos:", yPos);
-    console.log("calculateYPositionsTb3 - groupLabels:", groupLabels);
-    console.log("calculateYPositionsTb3 - subgroupLabels:", subgroupLabels);
+    // console.log("calculateYPositionsTb3 - yPos:", yPos);
+    // console.log("calculateYPositionsTb3 - groupLabels:", groupLabels);
+    // console.log("calculateYPositionsTb3 - subgroupLabels:", subgroupLabels);
 
     return { yPos, groupLabels, subgroupLabels };
 }
@@ -589,10 +631,10 @@ function createForestPlot(containerId, data, title) {
     const { yPos, groupLabels, subgroupLabels } = calculateYPositionsTb3(groupDefinitions);
     const plotData = Array.isArray(data) ? data[0] : data;
     const { oddsRatios, ciLowers, ciUppers, pValues } = plotData;
-    console.log("createForestPlot - oddsRatios:", oddsRatios);
-    console.log("createForestPlot - ciLowers:", ciLowers);
-    console.log("createForestPlot - ciUppers:", ciUppers);
-    console.log("createForestPlot - pValues:", pValues);
+    // console.log("createForestPlot - oddsRatios:", oddsRatios);
+    // console.log("createForestPlot - ciLowers:", ciLowers);
+    // console.log("createForestPlot - ciUppers:", ciUppers);
+    // console.log("createForestPlot - pValues:", pValues);
 
     // 유의미성 판단
     function isSignificant(lower, upper) {
@@ -783,7 +825,7 @@ function renderFilteredData() {
     const conditionSelect = document.getElementById('condition');
     const exposureSelect = document.getElementById('exposure');
 
-    console.log("renderFilteredData - Initial values:", { department, disease, condition, exposure });
+    // console.log("renderFilteredData - Initial values:", { department, disease, condition, exposure });
 
     if (conditionSelect && exposureSelect) {
         // 필터바 값 설정 (URL 파라미터 반영)
@@ -798,21 +840,21 @@ function renderFilteredData() {
 
         // condition 변경 시 department 및 질환 목록 업데이트
         conditionSelect.onchange = () => {
-            console.log("conditionSelect changed to:", conditionSelect.value);
+            // console.log("conditionSelect changed to:", conditionSelect.value);
             setDepartmentOptions(conditionSelect.value, exposureSelect.value);
             updateDiseaseOptions(departmentSelect.value, conditionSelect.value, exposureSelect.value);
         };
 
         // exposure 변경 시 department 및 질환 목록 업데이트
         exposureSelect.onchange = () => {
-            console.log("exposureSelect changed to:", exposureSelect.value);
+            // console.log("exposureSelect changed to:", exposureSelect.value);
             setDepartmentOptions(conditionSelect.value, exposureSelect.value);
             updateDiseaseOptions(departmentSelect.value, conditionSelect.value, exposureSelect.value);
         };
 
         // department 변경 시 질환 목록 업데이트
         departmentSelect.onchange = () => {
-            console.log("departmentSelect changed to:", departmentSelect.value);
+            // console.log("departmentSelect changed to:", departmentSelect.value);
             updateDiseaseOptions(departmentSelect.value, conditionSelect.value, exposureSelect.value);
         };
 
@@ -880,10 +922,19 @@ function renderFilteredData() {
         statsContent.appendChild(categoryDiv);
     };
 
-    updateCohortText(department, disease, exposure, condition);
-    renderForestPlotTb2(department, disease, exposure, condition);
-    renderForestPlot(department, disease, exposure, condition);
-    renderForestPlotTb4(department, disease, exposure, condition);
+        updateCohortText(department, disease, exposure, condition);
+        // if (['뇌졸중(전체)', '허혈성뇌졸중', '출혈성뇌졸중'].includes(disease)) {
+        //     renderForestPlotTb2Stroke(department, exposure, condition);
+        // } else if (['전체신장질환', '전체신장질환(급성신부전)', '전체신장질환(만성콩팥병)'].includes(disease)) {
+        //     renderForestPlotTb2Kidney(department, exposure, condition);
+        // } else if (['간질성폐질환', '간질성폐질환(CTD-related)', '간질성폐질환(CTD-unrelated)'].includes(disease)) {
+        //     renderForestPlotTb2Respiratory(department, exposure, condition);
+        // } else {
+        //     renderForestPlotTb2(department, disease, exposure, condition);
+        // }
+        renderForestPlotTb2(department, disease, exposure, condition);
+        renderForestPlot(department, disease, exposure, condition);
+        renderForestPlotTb4(department, disease, exposure, condition);
 
     const statsSection = document.querySelector('.content-sections');
     const graphSection = document.getElementById('graph-section');
@@ -899,7 +950,7 @@ function renderForestPlot(department, disease, exposure, condition) {
     }
 
     const filteredData = window.csvDataTb3.filter(row => row["분과"] === department && row["질환"] === disease && row["exposure"] === exposure && row["condition"] === condition);
-    console.log("renderForestPlot - filteredData:", filteredData); // filteredData 확인
+    // console.log("renderForestPlot - filteredData:", filteredData); // filteredData 확인
 
     const availableSubgroups = [...new Set(filteredData.map(row => row["subgroup"]))];
 
@@ -910,7 +961,7 @@ function renderForestPlot(department, disease, exposure, condition) {
             groupDefinitions[group] = matchingSubgroups;
         }
     }
-    console.log("renderForestPlot - groupDefinitions:", groupDefinitions);
+    // console.log("renderForestPlot - groupDefinitions:", groupDefinitions);
     const subgroupToGroup = {};
     for (const group in groupMappingTb3) {
         groupMappingTb3[group].forEach(subgroup => {
@@ -921,7 +972,7 @@ function renderForestPlot(department, disease, exposure, condition) {
     const orData = [];
     ['PM25', 'PM10'].forEach(air => {
         const airData = filteredData.filter(row => row["air"].toLowerCase() === air.toLowerCase());
-        console.log(`renderForestPlot - airData for ${air}:`, airData); // airData 확인
+        // console.log(`renderForestPlot - airData for ${air}:`, airData); // airData 확인
 
         const dataMap = {};
         airData.forEach(row => {
@@ -933,7 +984,7 @@ function renderForestPlot(department, disease, exposure, condition) {
                 pValue: row["p-value"] || ""
             };
         });
-        console.log(`renderForestPlot - dataMap for ${air}:`, dataMap); // dataMap 확인
+        // console.log(`renderForestPlot - dataMap for ${air}:`, dataMap); // dataMap 확인
 
         const oddsRatios = [];
         const ciLowers = [];
@@ -972,12 +1023,12 @@ function renderForestPlot(department, disease, exposure, condition) {
 
 
 function createForestPlotTb2(containerId, data, title) {
-    console.log("createForestPlotTb2 - data:", data);
+    // console.log("createForestPlotTb2 - data:", data);
 
     const yPos = [0];
     const groupLabels = [{ name: "Adjust", y: -0.5 }];
     const subgroupLabels = [{ name: "Adjust", y: 0 }];
-    console.log("createForestPlotTb2 - yPos:", yPos);
+    // console.log("createForestPlotTb2 - yPos:", yPos);
 
     const { oddsRatios, ciLowers, ciUppers, pValues } = data;
 
@@ -1133,12 +1184,12 @@ function renderForestPlotTb2(department, disease, exposure, condition) {
         row["condition"] === condition && 
         row["model"] === "adjust"
     );
-    console.log("renderForestPlotTb2 - filteredData:", filteredData);
+    // console.log("renderForestPlotTb2 - filteredData:", filteredData);
 
     const orData = [];
     ['pm25', 'pm10'].forEach(air => {
         const airData = filteredData.filter(row => row["air"].toLowerCase() === air.toLowerCase());
-        console.log(`renderForestPlotTb2 - airData for ${air}:`, airData);
+        // console.log(`renderForestPlotTb2 - airData for ${air}:`, airData);
 
         if (airData.length === 0) {
             console.warn(`No data for ${air} in tb2`);
@@ -1174,7 +1225,7 @@ function renderForestPlotTb2(department, disease, exposure, condition) {
 }
 
 function createForestPlotTb4(containerId, data, title) {
-    console.log("createForestPlotTb4 - data:", data);
+    // console.log("createForestPlotTb4 - data:", data);
 
     const yPos = [];
     const groupLabels = [];
@@ -1184,7 +1235,7 @@ function createForestPlotTb4(containerId, data, title) {
     const groupSpacing = 3;
 
     const groupDefs = groupDefinitions;
-    console.log("createForestPlotTb4 - groupDefs:", groupDefs);
+    // console.log("createForestPlotTb4 - groupDefs:", groupDefs);
 
     for (const [groupName, subItems] of Object.entries(groupDefs)) {
         const firstYInGroup = currentY;
@@ -1196,9 +1247,9 @@ function createForestPlotTb4(containerId, data, title) {
         groupLabels.push({ name: groupName, y: firstYInGroup - 0.5 });
         currentY += groupSpacing;
     }
-    console.log("Y Positions:", yPos);
-    console.log("Group Labels:", groupLabels);
-    console.log("Subgroup Labels:", subgroupLabels);
+    // console.log("Y Positions:", yPos);
+    // console.log("Group Labels:", groupLabels);
+    // console.log("Subgroup Labels:", subgroupLabels);
 
     const { oddsRatios, ciLowers, ciUppers, pValues } = data;
 
@@ -1347,16 +1398,16 @@ function renderForestPlotTb4(department, disease, exposure, condition) {
         row["exposure"] === exposure && 
         row["condition"] === condition
     );
-    console.log("renderForestPlotTb4 - filteredData:", filteredData);
+    // console.log("renderForestPlotTb4 - filteredData:", filteredData);
 
     const daysValues = [...new Set(filteredData.map(row => row["Days"]))].sort((a, b) => a - b);
     groupDefinitions = { "노출 기간": daysValues };
-    console.log("renderForestPlotTb4 - groupDefinitions:", groupDefinitions);
+    // console.log("renderForestPlotTb4 - groupDefinitions:", groupDefinitions);
 
     const orData = [];
     ['pm25', 'pm10'].forEach(air => {
         const airData = filteredData.filter(row => row["air"].substring(0, 4).toLowerCase() === air.toLowerCase());
-        console.log(`renderForestPlotTb4 - airData for ${air}:`, airData);
+        // console.log(`renderForestPlotTb4 - airData for ${air}:`, airData);
 
         const dataMap = {};
         airData.forEach(row => {
@@ -1371,7 +1422,7 @@ function renderForestPlotTb4(department, disease, exposure, condition) {
                 pValue: row["p-value"] || ""
             };
         });
-        console.log(`renderForestPlotTb4 - dataMap for ${air}:`, dataMap);
+        // console.log(`renderForestPlotTb4 - dataMap for ${air}:`, dataMap);
 
         const oddsRatios = [];
         const ciLowers = [];
@@ -1773,7 +1824,7 @@ function applyFilter() {
     const exposure = document.getElementById('exposure').value;
     const disease = document.getElementById('disease').value;
 
-    console.log("applyFilter - Selected values:", { department, condition, exposure, disease });
+    // console.log("applyFilter - Selected values:", { department, condition, exposure, disease });
 
     // URL 파라미터 업데이트 (새로고침 없이)
     const params = new URLSearchParams({
@@ -1881,4 +1932,157 @@ function adjustTooltipPosition(e, tooltip, svgObject, path) {
     
     tooltip.style.left = `${x}px`;
     tooltip.style.top = `${y}px`;
+}
+
+
+function renderForestPlotTb2Stroke(department, exposure, condition) {
+    if (!window.csvDataTb2) {
+        console.error("CSV 데이터(tb2)가 로드되지 않았습니다.");
+        return;
+    }
+    const strokeDiseases = ['뇌졸중(전체)', '허혈성뇌졸중', '출혈성뇌졸중'];
+    const filteredData = window.csvDataTb2.filter(row => 
+        row["분과"] === department && 
+        strokeDiseases.includes(row["질환"]) && 
+        row["exposure"] === exposure && 
+        row["condition"] === condition && 
+        row["model"] === "adjust"
+    );
+    const orData = {
+        oddsRatios: [],
+        ciLowers: [],
+        ciUppers: [],
+        pValues: [],
+        subgroups: []
+    };
+    strokeDiseases.forEach(disease => {
+        const row = filteredData.find(r => r["질환"] === disease);
+        if (row) {
+            orData.oddsRatios.push(parseFloat(row["OddsRatioEst"]) || 1.0);
+            orData.ciLowers.push(parseFloat(row["LowerCL"]) || 1.0);
+            orData.ciUppers.push(parseFloat(row["UpperCL"]) || 1.0);
+            orData.pValues.push(row["p-value"] || "");
+            orData.subgroups.push(disease);
+        } else {
+            orData.oddsRatios.push(1.0);
+            orData.ciLowers.push(1.0);
+            orData.ciUppers.push(1.0);
+            orData.pValues.push("");
+            orData.subgroups.push(disease);
+        }
+    });
+    createForestPlotTb2Stroke(
+        exposure === 'PM2.5' ? 'forest-plot-tb2-pm25' : 'forest-plot-tb2-pm10',
+        orData,
+        exposure === 'PM2.5' ? 'PM2.5 Stroke Forest Plot' : 'PM10 Stroke Forest Plot'
+    );
+}
+
+function createForestPlotTb2Stroke(containerId, data, title) {
+    const { oddsRatios, ciLowers, ciUppers, pValues, subgroups } = data;
+    const yPos = subgroups.map((_, i) => i);
+    const subgroupLabels = subgroups.map(name => ({ name }));
+
+    function isSignificant(lower, upper) {
+        return !(lower <= 1 && upper >= 1);
+    }
+
+    const traces = [
+        ...oddsRatios.map((or, i) => ({
+            x: [ciLowers[i], ciUppers[i]],
+            y: [yPos[i], yPos[i]],
+            mode: 'lines',
+            line: { color: 'red', width: 8 },
+            text: [`OR: ${or.toFixed(3)}${isSignificant(ciLowers[i], ciUppers[i]) ? '*' : ''}<br>CI: [${ciLowers[i].toFixed(3)}, ${ciUppers[i].toFixed(3)}]${pValues[i] ? `<br>p-value: ${pValues[i]}` : ''}`],
+            hoverinfo: 'text',
+            hoverlabel: { bgcolor: 'rgba(0, 0, 0, 0.8)', font: { color: 'white' } },
+            showlegend: false
+        })),
+        {
+            x: oddsRatios,
+            y: yPos,
+            mode: 'markers',
+            marker: { size: 8, color: 'black', line: { width: 0.5, color: 'black' } },
+            text: oddsRatios.map((or, i) => `OR: ${or.toFixed(3)}${isSignificant(ciLowers[i], ciUppers[i]) ? '*' : ''}<br>CI: [${ciLowers[i].toFixed(3)}, ${ciUppers[i].toFixed(3)}]${pValues[i] ? `<br>p-value: ${pValues[i]}` : ''}`),
+            hoverinfo: 'text',
+            showlegend: false
+        }
+    ];
+
+    const yMin = -1;
+    const yMax = subgroups.length;
+
+    const layout = {
+        title: { text: title, x: 0.5, xanchor: 'center', pad: { t: 20 } },
+        xaxis: {
+            title: 'Odds Ratio',
+            range: [
+                Math.max(0.85, 1.00 - Math.max(Math.abs(Math.min(...ciLowers) - 1.00), Math.abs(Math.max(...ciUppers) - 1.00)) - 0.01),
+                Math.min(1.15, 1.00 + Math.max(Math.abs(Math.min(...ciLowers) - 1.00), Math.abs(Math.max(...ciUppers) - 1.00)) + 0.01)
+            ],
+            tickvals: (() => {
+                const minVal = Math.max(0.85, Math.min(...ciLowers));
+                const maxVal = Math.min(1.15, Math.max(...ciUppers));
+                if (maxVal - minVal < 0.04) {
+                    return [0.98, 0.99, 1.00, 1.01, 1.02];
+                }
+                const step = (maxVal - minVal) / 4;
+                return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => Math.round(val * 100) / 100);
+            })(),
+            ticktext: (() => {
+                const minVal = Math.max(0.85, Math.min(...ciLowers));
+                const maxVal = Math.min(1.15, Math.max(...ciUppers));
+                if (maxVal - minVal < 0.04) {
+                    return ['0.98', '0.99', '1.00', '1.01', '1.02'];
+                }
+                const step = (maxVal - minVal) / 4;
+                return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => val.toFixed(2));
+            })(),
+            tickangle: 0,
+            showgrid: false,
+            zeroline: true,
+            zerolinecolor: 'gray',
+            zerolinewidth: 1,
+            linecolor: 'black',
+            linewidth: 1
+        },
+        yaxis: {
+            range: [yMax, yMin],
+            tickvals: yPos,
+            ticktext: subgroups,
+            showgrid: true,
+            gridcolor: 'lightgray',
+            gridwidth: 1,
+            zeroline: false
+        },
+        shapes: [
+            {
+                type: 'line',
+                x0: 1,
+                x1: 1,
+                y0: yMin,
+                y1: yMax,
+                line: { color: 'gray', width: 1, dash: 'dash' }
+            }
+        ],
+        annotations: [
+            ...pValues.map((pValue, idx) => ({
+                x: 1.05,
+                xref: 'paper',
+                y: yPos[idx],
+                text: pValue,
+                xanchor: 'left',
+                yanchor: 'middle',
+                showarrow: false,
+                font: { size: 10 }
+            }))
+        ],
+        margin: { l: 150, r: 50, t: 80, b: 50 },
+        height: subgroups.length * 80 + 100,
+        hovermode: 'closest',
+        paper_bgcolor: '#f9f9f9',
+        plot_bgcolor: '#f9f9f9'
+    };
+
+    Plotly.newPlot(containerId, traces, layout);
 }
