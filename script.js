@@ -167,8 +167,10 @@ const shortOccurMapping = {
     "피부": ["건선", "주사", "아토피성피부염"],
     "류마티스": ["쇼그렌증후군"],
     "이비인후": ["만성부비동염", "알레르기성비염"],
-    "신장": ["전체신장질환", "전체신장질환(급성신부전)", "전체신장질환(만성콩팥병)"],
-    "뇌졸중": ["뇌졸중(전체)", "허혈성뇌졸중", "출혈성뇌졸중"],
+    // "신장": ["전체신장질환", "전체신장질환(급성신부전)", "전체신장질환(만성콩팥병)"],
+    "신장": ["전체신장질환"],
+    // "뇌졸중": ["뇌졸중(전체)", "허혈성뇌졸중", "출혈성뇌졸중"],
+    "뇌졸중": ["뇌졸중(전체)"],
     "안과": ["망막동맥폐쇄", "망막정맥폐쇄", "비감염성전방포도막염", "비감염성비전방포도막염", "비감염성공막염", "안구건조증", "알레르기성결막염", "안검염", "백내장"]
 };
 
@@ -923,16 +925,16 @@ function renderFilteredData() {
     };
 
         updateCohortText(department, disease, exposure, condition);
-        // if (['뇌졸중(전체)', '허혈성뇌졸중', '출혈성뇌졸중'].includes(disease)) {
-        //     renderForestPlotTb2Stroke(department, exposure, condition);
-        // } else if (['전체신장질환', '전체신장질환(급성신부전)', '전체신장질환(만성콩팥병)'].includes(disease)) {
-        //     renderForestPlotTb2Kidney(department, exposure, condition);
-        // } else if (['간질성폐질환', '간질성폐질환(CTD-related)', '간질성폐질환(CTD-unrelated)'].includes(disease)) {
-        //     renderForestPlotTb2Respiratory(department, exposure, condition);
-        // } else {
-        //     renderForestPlotTb2(department, disease, exposure, condition);
-        // }
-        renderForestPlotTb2(department, disease, exposure, condition);
+        const combinedDiseases = {
+            '뇌졸중(전체)': ['뇌졸중(전체)', '허혈성뇌졸중', '출혈성뇌졸중'],
+            '전체신장질환': ['전체신장질환', '전체신장질환(급성신부전)', '전체신장질환(만성콩팥병)'],
+            '간질성폐질환': ['간질성폐질환', '간질성폐질환(CTD-related)', '간질성폐질환(CTD-unrelated)']
+        };
+        if (combinedDiseases[disease] && !(disease === '전체신장질환' && condition === '악화')) {
+            renderForestPlotTb2Stroke(department, disease, exposure, condition, combinedDiseases[disease]);
+        } else {
+            renderForestPlotTb2(department, disease, exposure, condition);
+        }
         renderForestPlot(department, disease, exposure, condition);
         renderForestPlotTb4(department, disease, exposure, condition);
 
@@ -1935,94 +1937,136 @@ function adjustTooltipPosition(e, tooltip, svgObject, path) {
 }
 
 
-function renderForestPlotTb2Stroke(department, exposure, condition) {
+function renderForestPlotTb2Stroke(department, disease, exposure, condition, subDiseases) {
     if (!window.csvDataTb2) {
         console.error("CSV 데이터(tb2)가 로드되지 않았습니다.");
         return;
     }
-    const strokeDiseases = ['뇌졸중(전체)', '허혈성뇌졸중', '출혈성뇌졸중'];
-    const filteredData = window.csvDataTb2.filter(row => 
-        row["분과"] === department && 
-        strokeDiseases.includes(row["질환"]) && 
-        row["exposure"] === exposure && 
-        row["condition"] === condition && 
-        row["model"] === "adjust"
-    );
-    const orData = {
-        oddsRatios: [],
-        ciLowers: [],
-        ciUppers: [],
-        pValues: [],
-        subgroups: []
-    };
-    strokeDiseases.forEach(disease => {
-        const row = filteredData.find(r => r["질환"] === disease);
-        if (row) {
-            orData.oddsRatios.push(parseFloat(row["OddsRatioEst"]) || 1.0);
-            orData.ciLowers.push(parseFloat(row["LowerCL"]) || 1.0);
-            orData.ciUppers.push(parseFloat(row["UpperCL"]) || 1.0);
-            orData.pValues.push(row["p-value"] || "");
-            orData.subgroups.push(disease);
-        } else {
-            orData.oddsRatios.push(1.0);
-            orData.ciLowers.push(1.0);
-            orData.ciUppers.push(1.0);
-            orData.pValues.push("");
-            orData.subgroups.push(disease);
-        }
+    const orData = [];
+    ['pm25', 'pm10'].forEach(air => {
+        const filteredData = window.csvDataTb2.filter(row => 
+            row["분과"] === department && 
+            subDiseases.includes(row["질환"]) && 
+            row["air"].toLowerCase() === air && 
+            row["condition"] === condition && 
+            row["model"] === "adjust"
+        );
+        console.log("Filtered Data:", filteredData);
+        const data = {
+            oddsRatios: [],
+            ciLowers: [],
+            ciUppers: [],
+            pValues: {},
+            subgroups: []
+        };
+        subDiseases.forEach(subDisease => {
+            const row = filteredData.find(r => r["질환"] === subDisease);
+            if (row) {
+                data.oddsRatios.push(parseFloat(row["OddsRatioEst"]) || 1.0);
+                data.ciLowers.push(parseFloat(row["LowerCL"]) || 1.0);
+                data.ciUppers.push(parseFloat(row["UpperCL"]) || 1.0);
+                data.pValues[subDisease] = row["p-value"] || "";
+                data.subgroups.push(subDisease);
+            } else {
+                data.oddsRatios.push(1.0);
+                data.ciLowers.push(1.0);
+                data.ciUppers.push(1.0);
+                data.pValues[subDisease] = "";
+                data.subgroups.push(subDisease);
+            }
+        });
+
+        orData.push(data);
     });
-    createForestPlotTb2Stroke(
-        exposure === 'PM2.5' ? 'forest-plot-tb2-pm25' : 'forest-plot-tb2-pm10',
-        orData,
-        exposure === 'PM2.5' ? 'PM2.5 Stroke Forest Plot' : 'PM10 Stroke Forest Plot'
-    );
+
+    if (orData.length > 0) {
+        createForestPlotTb2Stroke('forest-plot-tb2-pm25', orData[0], 'PM 2.5');
+    }
+    if (orData.length > 1) {
+        createForestPlotTb2Stroke('forest-plot-tb2-pm10', orData[1], 'PM 10');
+    }
 }
 
 function createForestPlotTb2Stroke(containerId, data, title) {
     const { oddsRatios, ciLowers, ciUppers, pValues, subgroups } = data;
-    const yPos = subgroups.map((_, i) => i);
+    const yPos = subgroups.map((_, i) => i * 1.5); // 간격 확대
+    const groupLabels = [{ name: "Adjust", y: -0.5 }];
     const subgroupLabels = subgroups.map(name => ({ name }));
 
     function isSignificant(lower, upper) {
         return !(lower <= 1 && upper >= 1);
     }
 
+    const adjustedOddsRatios = [];
+    const adjustedCiLowers = [];
+    const adjustedCiUppers = [];
+    const adjustedTooltipText = [];
+    yPos.forEach((_, i) => {
+        if (i < oddsRatios.length && oddsRatios[i] !== undefined && !isNaN(oddsRatios[i])) {
+            adjustedOddsRatios.push(oddsRatios[i]);
+            adjustedCiLowers.push(ciLowers[i]);
+            adjustedCiUppers.push(ciUppers[i]);
+            const sig = isSignificant(ciLowers[i], ciUppers[i]);
+            adjustedTooltipText.push(`OR: ${oddsRatios[i].toFixed(3)}${sig ? '*' : ''}<br>CI: [${ciLowers[i].toFixed(3)}, ${ciUppers[i].toFixed(3)}]`);
+        } else {
+            adjustedOddsRatios.push(1.0);
+            adjustedCiLowers.push(1.0);
+            adjustedCiUppers.push(1.0);
+            adjustedTooltipText.push("No data");
+        }
+    });
+
     const traces = [
-        ...oddsRatios.map((or, i) => ({
-            x: [ciLowers[i], ciUppers[i]],
+        ...adjustedOddsRatios.map((or, i) => ({
+            x: [adjustedCiLowers[i], adjustedCiUppers[i]],
             y: [yPos[i], yPos[i]],
             mode: 'lines',
-            line: { color: 'red', width: 8 },
-            text: [`OR: ${or.toFixed(3)}${isSignificant(ciLowers[i], ciUppers[i]) ? '*' : ''}<br>CI: [${ciLowers[i].toFixed(3)}, ${ciUppers[i].toFixed(3)}]${pValues[i] ? `<br>p-value: ${pValues[i]}` : ''}`],
+            line: {
+                color: 'red',
+                width: 8
+            },
+            text: [adjustedTooltipText[i], adjustedTooltipText[i]],
             hoverinfo: 'text',
-            hoverlabel: { bgcolor: 'rgba(0, 0, 0, 0.8)', font: { color: 'white' } },
+            hoverlabel: {
+                bgcolor: 'rgba(0, 0, 0, 0.8)',
+                font: { color: 'white' }
+            },
             showlegend: false
         })),
         {
-            x: oddsRatios,
+            x: adjustedOddsRatios,
             y: yPos,
             mode: 'markers',
-            marker: { size: 8, color: 'black', line: { width: 0.5, color: 'black' } },
-            text: oddsRatios.map((or, i) => `OR: ${or.toFixed(3)}${isSignificant(ciLowers[i], ciUppers[i]) ? '*' : ''}<br>CI: [${ciLowers[i].toFixed(3)}, ${ciUppers[i].toFixed(3)}]${pValues[i] ? `<br>p-value: ${pValues[i]}` : ''}`),
+            marker: {
+                size: 8,
+                color: 'black',
+                line: { width: 0.5, color: 'black' }
+            },
+            text: adjustedTooltipText,
             hoverinfo: 'text',
             showlegend: false
         }
     ];
 
-    const yMin = -1;
-    const yMax = subgroups.length;
+    const yMin = Math.min(...yPos, ...groupLabels.map(g => g.y)) - 1;
+    const yMax = Math.max(...yPos) + 1;
 
     const layout = {
-        title: { text: title, x: 0.5, xanchor: 'center', pad: { t: 20 } },
+        title: {
+            text: title,
+            x: 0.5,
+            xanchor: 'center',
+            pad: { t: 20 }
+        },
         xaxis: {
             title: 'Odds Ratio',
             range: [
-                Math.max(0.85, 1.00 - Math.max(Math.abs(Math.min(...ciLowers) - 1.00), Math.abs(Math.max(...ciUppers) - 1.00)) - 0.01),
-                Math.min(1.15, 1.00 + Math.max(Math.abs(Math.min(...ciLowers) - 1.00), Math.abs(Math.max(...ciUppers) - 1.00)) + 0.01)
+                Math.max(0.85, 1.00 - Math.max(Math.abs(Math.min(...adjustedCiLowers) - 1.00), Math.abs(Math.max(...adjustedCiUppers) - 1.00)) - 0.01),
+                Math.min(1.15, 1.00 + Math.max(Math.abs(Math.min(...adjustedCiLowers) - 1.00), Math.abs(Math.max(...adjustedCiUppers) - 1.00)) + 0.01)
             ],
             tickvals: (() => {
-                const minVal = Math.max(0.85, Math.min(...ciLowers));
-                const maxVal = Math.min(1.15, Math.max(...ciUppers));
+                const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
+                const maxVal = Math.min(1.15, Math.max(...adjustedCiUppers));
                 if (maxVal - minVal < 0.04) {
                     return [0.98, 0.99, 1.00, 1.01, 1.02];
                 }
@@ -2030,8 +2074,8 @@ function createForestPlotTb2Stroke(containerId, data, title) {
                 return [minVal, minVal + step, minVal + 2 * step, minVal + 3 * step, maxVal].map(val => Math.round(val * 100) / 100);
             })(),
             ticktext: (() => {
-                const minVal = Math.max(0.85, Math.min(...ciLowers));
-                const maxVal = Math.min(1.15, Math.max(...ciUppers));
+                const minVal = Math.max(0.85, Math.min(...adjustedCiLowers));
+                const maxVal = Math.min(1.15, Math.max(...adjustedCiUppers));
                 if (maxVal - minVal < 0.04) {
                     return ['0.98', '0.99', '1.00', '1.01', '1.02'];
                 }
@@ -2049,7 +2093,30 @@ function createForestPlotTb2Stroke(containerId, data, title) {
         yaxis: {
             range: [yMax, yMin],
             tickvals: yPos,
-            ticktext: subgroups,
+            ticktext: subgroupLabels.map(s => {
+                const maxLength = 6;
+                let name = s.name;
+                if (name.includes('(')) {
+                    return name.replace('(', '<br>(');
+                }
+                if (name.length > maxLength) {
+                    const words = name.split(' ');
+                    
+                    let wrapped = '';
+                    let currentLine = '';
+                    words.forEach(word => {
+                        if ((currentLine + word).length > maxLength) {
+                            wrapped += (wrapped ? '<br>' : '') + currentLine;
+                            currentLine = word + ' ';
+                        } else {
+                            currentLine += word + ' ';
+                        }
+                    });
+                    wrapped += (wrapped ? '<br>' : '') + currentLine;
+                    return wrapped.trim();
+                }
+                return name;
+            }),
             showgrid: true,
             gridcolor: 'lightgray',
             gridwidth: 1,
@@ -2066,7 +2133,7 @@ function createForestPlotTb2Stroke(containerId, data, title) {
             }
         ],
         annotations: [
-            ...pValues.map((pValue, idx) => ({
+            ...Object.entries(pValues).map(([subgroup, pValue], idx) => ({
                 x: 1.05,
                 xref: 'paper',
                 y: yPos[idx],
@@ -2077,8 +2144,8 @@ function createForestPlotTb2Stroke(containerId, data, title) {
                 font: { size: 10 }
             }))
         ],
-        margin: { l: 150, r: 50, t: 80, b: 50 },
-        height: subgroups.length * 80 + 100,
+        margin: { l: 100, r: 50, t: 30, b: 80 },
+        height: subgroups.length * 50 + 200,
         hovermode: 'closest',
         paper_bgcolor: '#f9f9f9',
         plot_bgcolor: '#f9f9f9'
